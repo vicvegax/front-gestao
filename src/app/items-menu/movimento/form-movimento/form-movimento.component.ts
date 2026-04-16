@@ -7,12 +7,12 @@ import { MatSelectModule, MatSelectTrigger } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCardModule } from '@angular/material/card';
 import { BaseFormComponent, UppercaseDirective, CustomFormComponent } from '@app/_helpers';
-import { OrgaoAllDto as DataDto } from '@app/_dto';
+import { MovimentoDto as DataDto } from '@app/_dto';
 
 
 @Component({
-  selector: 'form-orgao',
-  templateUrl: './form-orgao.component.html',
+  selector: 'form-movimento',
+  templateUrl: './form-movimento.component.html',
   imports: [
     MatInputModule,
     MatButtonModule,
@@ -24,7 +24,7 @@ import { OrgaoAllDto as DataDto } from '@app/_dto';
     CustomFormComponent
 ]
 })
-export class FormOrgao extends BaseFormComponent<DataDto> {
+export class FormMovimento extends BaseFormComponent<DataDto> {
   
   @Input() set registro(dados: DataDto | undefined) {
     this.modoEditar.set(!!dados?.id);

@@ -20,8 +20,8 @@ export const routes: Routes = [
         loadComponent: () => import('./items-menu/cargos/cargos.component').then(m => m.ListagemCargos)
       },
       {
-        path: 'orgaos',
-        loadComponent: () => import('./items-menu/orgaos/orgaos.component').then(m => m.ListagemOrgaos)
+        path: 'movimento',
+        loadComponent: () => import('./items-menu/movimento/movimento.component').then(m => m.ListagemMovimento)
       },
       {
         path: 'tipo-evento',

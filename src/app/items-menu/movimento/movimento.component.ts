@@ -1,23 +1,23 @@
 import { Component } from '@angular/core';
-import { OrgaosDataSource } from './orgaos-datasource';
-import { OrgaoAllDto as DataDto } from '@app/_dto';
-import { FormOrgao } from "./form-orgao/form-orgao.component";
+import { MovimentoDataSource } from './movimento-datasource';
+import { MovimentoDto as DataDto } from '@app/_dto';
+import { FormMovimento } from "./form-movimento/form-movimento.component";
 import { BaseComponent, CustomListagem } from '@app/_helpers';
 import { lastValueFrom } from 'rxjs';
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 
 @Component({
-  selector: 'app-orgaos',
-  templateUrl: './orgaos.component.html',
-  imports: [FormOrgao, CustomListagem]
+  selector: 'app-movimento',
+  templateUrl: './movimento.component.html',
+  imports: [FormMovimento, CustomListagem]
 })
-export class ListagemOrgaos extends BaseComponent<DataDto> {
-  dataSource = new OrgaosDataSource();
+export class ListagemMovimento extends BaseComponent<DataDto> {
+  dataSource = new MovimentoDataSource();
   columns = [
-    {key: 'nome', label: 'Nome'},
-    {key: 'sigla', label: 'Sigla'},
-    {key: 'obs', label: 'Obs.'},
-    {key: 'ativo', label: 'Disponível?', type: 'ativo'},
+    {key: 'usuario', value: (row: DataDto) => row.unidade.nome, label: 'Centro de Custos'},
+    {key: 'pessoal', value: (row: DataDto) => row.pessoal.nome, label: 'Favorecido'},
+    {key: 'evento', value: (row: DataDto) => row.evento.nome, label: 'Evento'},
+    {key: 'valor', label: 'Valor'},
     {key: 'id', label: 'Id.'}
   ]
 

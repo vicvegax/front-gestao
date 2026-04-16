@@ -20,49 +20,52 @@
         }
       </mat-form-field>
 
-      <table mat-table [dataSource]="dataSource()" matSort 
-        (matSortChange)="handleSortEvent($event)"
-        [matSortActive]="route.snapshot.queryParams['sort']"
-        [matSortDirection]="route.snapshot.queryParams['dir'] || 'asc'"
-        class="w-full"
-      >
-        @for (col of columns(); track col.key) {
-          <ng-container [matColumnDef]="col.key">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header
-            ><span 
-               [class.col-id]="col.key === 'id'"
-               [class.col-ativo]="col.type === 'ativo'"
-            >{{ col.label }}</span></th>
-            <td mat-cell *matCellDef="let row"
-              [class.col-id]="col.key === 'id'"
-              [class.col-cpf]="col.key === 'cpf'"
-              [class.col-ativo]="col.type === 'ativo'"
-            >
-              @switch (col.type) {
-                @case('cpf') { {{ row[col.key] | cpf }} }
-                @case('telefone') { {{ row[col.key] | mask: '(00) 00000-0000||00000-0000'}} }
-                @case('ativo') { <span [class.text-red-500]="!row[col.key]">{{ row[col.key] ? 'SIM' : 'NÃO' }}</span> }
-                @case('enum') { {{ enumMap()?.[col.key]?.[row[col.key]] || row[col.key] }} }
-                @default { {{ row[col.key] }} }
-              }
+      <div class="w-full overflow-x-auto">
+        <table mat-table [dataSource]="dataSource()" matSort 
+          (matSortChange)="handleSortEvent($event)"
+          [matSortActive]="route.snapshot.queryParams['sort']"
+          [matSortDirection]="route.snapshot.queryParams['dir'] || 'asc'"
+          class="w-full"
+        >
+          @for (col of columns(); track col.key) {
+            <ng-container [matColumnDef]="col.key">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header
+              ><span 
+                [class.col-id]="col.key === 'id'"
+                [class.col-ativo]="col.type === 'ativo'"
+              >{{ col.label }}</span></th>
+              <td mat-cell *matCellDef="let row"
+                [class.col-id]="col.key === 'id'"
+                [class.col-cpf]="col.key === 'cpf'"
+                [class.col-ativo]="col.type === 'ativo'"
+              >
+                <!-- @let value = col.value ? col.value(row) : row[col.key]; -->
+                @switch (col.type) {
+                  @case('cpf') { {{ row[col.key] | cpf }} }
+                  @case('telefone') { {{ row[col.key] | mask: '(00) 00000-0000||00000-0000'}} }
+                  @case('ativo') { <span [class.text-red-500]="!row[col.key]">{{ row[col.key] ? 'SIM' : 'NÃO' }}</span> }
+                  @case('enum') { {{ enumMap()?.[col.key]?.[row[col.key]] || row[col.key] }} }
+                  @default { {{ col.value ? col.value(row) : row[col.key] }} }
+                }
+              </td>
+            </ng-container>
+          }
+
+          <ng-container matColumnDef="acoes">
+            <th mat-header-cell *matHeaderCellDef class="col-acoes"></th>
+            <td mat-cell *matCellDef="let row" class="col-acoes">
+              <button mat-icon-button (click)="editar.emit(row)" [disabled]="loading()">
+                <mat-icon>edit</mat-icon>
+              </button>
             </td>
           </ng-container>
-        }
 
-        <ng-container matColumnDef="acoes">
-          <th mat-header-cell *matHeaderCellDef class="col-acoes"></th>
-          <td mat-cell *matCellDef="let row" class="col-acoes">
-            <button mat-icon-button (click)="editar.emit(row)" [disabled]="loading()">
-              <mat-icon>edit</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-          [class.row-indisponivel]="!row.ativo"
-        ></tr>
-      </table>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            [class.row-indisponivel]="row.ativo !== undefined && !row.ativo"
+          ></tr>
+        </table>
+      </div>
       
       <div class="flex flex-col sm:flex-row items-center justify-between p-2 gap-4 bg-surface" style="background-color: var(--mat-sys-surface, blue);">
         <button mat-flat-button (click)="novo.emit()" [disabled]="loading()">Novo Registro</button>

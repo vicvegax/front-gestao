@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import { Observable } from 'rxjs';
 import { Decimal } from 'decimal.js';
-import { MovimentoDashBoardDto, MovimentoDto } from '@app/_dto';
+import { MovimentoDashBoardDto, MovimentoDto, MovimentoListResponse } from '@app/_dto';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +12,8 @@ export class MovimentoService {
   http = inject(HttpClient);
   private readonly rota = 'movimento';
 
-  public getAll(): Observable<MovimentoDto[]> {
-    return this.http.get<MovimentoDto[]>(environment.api + this.rota)
+  public getAll(): Observable<MovimentoListResponse> {
+    return this.http.get<MovimentoListResponse>(environment.api + this.rota + '?conta=4')
   }
 
   public getDashboard() {

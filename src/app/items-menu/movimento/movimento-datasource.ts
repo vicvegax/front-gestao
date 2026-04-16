@@ -1,7 +1,7 @@
 import { lastValueFrom } from 'rxjs';
-import { OrgaoAllDto as DadosDto } from '@app/_dto';
+import { MovimentoDto as DadosDto } from '@app/_dto';
 import { inject } from '@angular/core';
-import { OrgaosService as DadosService } from '@app/_services';
+import { MovimentoService as DadosService } from '@app/_services';
 import { BaseDataSource } from '@app/_helpers/base-datasource';
 
 
@@ -10,7 +10,7 @@ import { BaseDataSource } from '@app/_helpers/base-datasource';
  * encapsulate all logic for fetching and manipulating the displayed data
  * (including sorting, pagination, and filtering).
  */
-export class OrgaosDataSource extends BaseDataSource<DadosDto> {
+export class MovimentoDataSource extends BaseDataSource<DadosDto> {
   dataService = inject(DadosService);
 
   constructor() {
@@ -20,7 +20,7 @@ export class OrgaosDataSource extends BaseDataSource<DadosDto> {
   async loadData(): Promise<void> {
     try {
       const dados = await lastValueFrom(this.dataService.getAll());
-      this.dataSignal.set(dados)
+      this.dataSignal.set(dados.data)
     } finally {
       // O sinal será atualizado após a conclusão da Promise
     }

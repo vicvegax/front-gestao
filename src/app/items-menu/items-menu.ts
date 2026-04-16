@@ -112,7 +112,7 @@ export class ItemsMenu {
       label: 'Tabelas',
       children: [
         { label: 'Feriados', routes: '/contratos', icon: 'event_list' },
-        { label: 'Eventos', route: '/eventos', icon: 'schedule' },
+        { label: 'Eventos', route: '/eventos', icon: 'account_balance_wallet' },
         { label: 'Tipos de Documentos', routes: '/contratos', icon: 'file_present' },
         { label: 'Tipos de Contrato', routes: '/contratos', icon: 'fact_check' },
         { label: 'Tipos de Reajuste', routes: '/contratos', icon: 'policy' },
