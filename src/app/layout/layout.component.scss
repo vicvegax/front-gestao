@@ -1,0 +1,85 @@
+@use '@angular/material' as mat;
+
+.mat-toolbar-header {
+  @include mat.toolbar-overrides((
+    container-background-color: var(--mat-sys-primary),
+    container-text-color: var(--mat-sys-on-primary),
+  ));
+
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+}
+
+.mat-nav-list-menu {
+  @include mat.list-overrides((
+    list-item-label-text-color: var(--mat-sys-on-primary),
+    list-item-focus-label-text-color: var(--mat-sys-on-primary),
+    list-item-hover-label-text-color: var(--mat-sys-on-primary),
+  ));
+}
+
+.mat-toolbar-logo {
+  @include mat.toolbar-overrides((
+    container-background-color: var(--mat-sys-on-primary),
+  ));
+}
+
+.logo {
+  height: 100%;
+  width: 100px;
+}
+
+.sidenav-container {
+  height: 100%;
+}
+
+.sidenav {
+  @include mat.sidenav-overrides((
+    container-background-color: var(--mat-sys-primary),
+    container-width: 255px,
+    container-shape: square,
+    container-text-color: var(--mat-sys-on-primary),
+  ));
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.menu-list {
+  @include mat.list-overrides((
+    list-item-label-text-color: var(--mat-sys-on-primary),
+    list-item-focus-label-text-color: var(--mat-sys-on-primary),
+    list-item-hover-label-text-color: var(--mat-sys-on-primary),
+  ))
+}
+
+.logo-pai {
+  height: 100px;
+  // width: 222px;
+}
+
+
+.div-logo-pai {
+  // background: url('/bg.png') top left no-repeat;
+  margin-top: 5px;
+  background-color: white;
+  text-align: center;
+  height: 112px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  // width: 222px;
+}
+
+.home-container {
+  // width: min(100% - 32px, 1200px); 
+  
+  /* Centraliza o container na tela */
+  margin-left: auto;
+  margin-right: auto;
+
+  padding: 16px;
+}

@@ -1,0 +1,58 @@
+  <div class="flex items-center justify-center min-h-screen bg-gray-50"s>
+    <mat-card class="w-full max-w-[400px] !p-8">
+      <mat-card-header class="justify-center mb-4">
+        <mat-card-title class="!text-3xl !font-medium text-center">Solução{{modoDev ? ' (DEV)' : ''}}</mat-card-title>
+        <!-- <mat-card-subtitle>Textio Gabndndnd</mat-card-subtitle> -->
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="loginForm" (ngSubmit)="submit()" id="formLogin" name="formLogin">
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>CPF</mat-label>
+            <input matInput 
+            name="pai_cpf" id="pai_cpf"
+            autocomplete="pai_cpf"
+            formControlName="cpf" 
+            mask="000.000.000-00"
+            placeholder="___.___.___-__"
+            required>
+            @if(f.cpf.invalid && f.cpf.touched){
+              <mat-error>Informe um CPF válido.</mat-error> 
+            }
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Senha</mat-label>
+            <input matInput 
+            name="pai_senha" id="pai_senha"
+            autocomplete="pai_senha"
+            [type]="visiblePassword ? 'text' : 'password'" 
+            formControlName="senha" required>
+            <button matIconButton matSuffix
+              (blur)="visiblePassword = false"
+              (click)="visiblePassword = !visiblePassword; $event.stopPropagation();"  [attr.aria-label]="'Ocultar senha'" type="button">
+              <mat-icon>{{visiblePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            @if(f.senha.invalid && f.senha.touched){
+              <mat-error>Informe uma senha válida.</mat-error> 
+            }
+          </mat-form-field>
+          <button matButton="filled" color="primary" type="submit" 
+            class="!h-10 !text-base mt-4 w-full"
+            [disabled]="loginForm.invalid || loading">
+            <span class="flex items-center justify-center gap-2">
+              @if(loading) {
+                <mat-spinner diameter="24" mode="indeterminate"></mat-spinner>
+              } @else {
+                <mat-icon>login</mat-icon>
+                <span>Login</span>
+              }
+            </span>
+          </button>
+        </form>
+      </mat-card-content>
+      <mat-card-content class="mt-8 flex justify-center">
+        <img src="solucao.png" class="max-w-full h-auto"/>
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+  

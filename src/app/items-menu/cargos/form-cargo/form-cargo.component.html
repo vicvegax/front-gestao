@@ -1,0 +1,30 @@
+<custom-form (voltar)="onVoltarClick()" (salvar)="onSalvarClick()" [canSave]="form.valid" [loading]="loading()">
+  <form [formGroup]="form" novalidate>
+    <div class="grid grid-cols-6 gap-4">
+      <mat-form-field appearance="fill" class="col-span-full">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="nome" toUppercase minlength="3">
+        @if (form.controls['nome'].hasError('required')) {
+          <mat-error>Nome é <strong>requerido</strong></mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field class="col-span-full">
+        <mat-label>Observação</mat-label>
+        <textarea matInput formControlName="obs"></textarea>
+      </mat-form-field>
+
+      @if(modoEditar()) {
+        <mat-form-field class="col-span-3">
+          <mat-label>Situação</mat-label>
+          <mat-select formControlName="ativo" >
+            <mat-select-trigger [class.texto-red]="form.get('ativo')?.value === false">
+              {{ form.get('ativo')?.value ? 'DISPONÍVEL' : 'INDISPONÍVEL' }}
+            </mat-select-trigger>
+            <mat-option [value]="true">DISPONÍVEL</mat-option>
+            <mat-option [value]="false" class="texto-red">INDISPONÍVEL</mat-option>
+          </mat-select>
+        </mat-form-field>
+      }
+    </div>
+  </form>
+</custom-form>

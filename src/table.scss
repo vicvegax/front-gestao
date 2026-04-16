@@ -1,0 +1,44 @@
+.mat-mdc-row .mat-mdc-cell {
+  cursor: pointer;
+}
+
+.mat-mdc-row:hover .mat-mdc-cell {
+  background: whitesmoke;
+}
+
+
+/* Linha com fundo vermelho bem suave */
+.row-indisponivel {
+  background-color: #fff1f0 !important; /* Vermelho muito claro */
+}
+
+/* Célula com texto em destaque e negrito */
+.cell-destaque-vermelho {
+  color: #d32f2f;
+  // font-weight: bold;
+}
+
+.col-acoes {
+  width: 7rem;
+  text-align: center !important;
+  justify-content: center !important;
+  // text-align: center;
+}
+
+.col-id {
+  width: 5rem;
+  text-align: right !important;
+  justify-content: right !important;
+}
+
+.col-cpf {
+  width: 11rem;
+  // text-align: center;
+}
+
+.col-ativo {
+  width: 6rem;
+  text-align: center !important;
+  justify-content: center !important;
+}
+

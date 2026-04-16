@@ -1,0 +1,38 @@
+.grid-container {
+  margin: 20px;
+}
+
+.dashboard-card {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  right: 15px;
+  bottom: 15px;
+}
+
+.more-button {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+
+.dashboard-card-content {
+  font-size: 3rem;
+  font-weight: 500;
+/* 1. Ocupar toda a altura disponível do Card para ter "espaço" para centralizar */
+  height: 100%; 
+  
+  /* 2. Ativar o Flexbox */
+  display: flex;
+  
+  /* 3. Centralizar Horizontalmente */
+  justify-content: center; 
+  
+  /* 4. Centralizar Verticalmente */
+  align-items: center; 
+  
+  /* Opcional: Se tiver mais de um item e quiser um embaixo do outro */
+  // flex-direction: column; 
+  
+  text-align: center; // Mantém o texto centralizado se ele quebrar linha
+}

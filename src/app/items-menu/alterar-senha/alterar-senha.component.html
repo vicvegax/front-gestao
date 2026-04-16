@@ -1,0 +1,54 @@
+<form [formGroup]="form" novalidate (ngSubmit)="onSubmit()">
+  <mat-card class="shipping-card">
+    <mat-card-header class="mb-15">
+      <mat-card-title>Alteração de Senha</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="row">
+        <div class="col">
+          <mat-form-field class="full-width" appearance="fill">
+            <mat-label>Senha Atual</mat-label>
+            <input matInput formControlName="senhaAtual" type="password">
+            @if (f['senhaAtual'].hasError('required')) {
+              <mat-error>Senha atual é obrigatória</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <mat-form-field class="full-width">
+            <mat-label>Nova Senha</mat-label>
+            <input matInput formControlName="novaSenha" type="password">
+            @if (f['novaSenha'].hasError('required')) {
+              <mat-error>Nova senha é obrigatória</mat-error>
+            } @else if (f['novaSenha'].hasError('minlength')) {
+              <mat-error>Mínimo de 6 caracteres</mat-error>
+            } @else if (f['novaSenha'].hasError('pattern')) {
+              <mat-error>Precisa ter: Maiúscula, minúscula e Símbolo</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <mat-form-field class="full-width">
+            <mat-label>Confirma Senha</mat-label>
+            <input matInput formControlName="confirmaSenha" type="password">
+            @if (f['confirmaSenha'].hasError('required')) {
+              <mat-error>Confirmação é obrigatória</mat-error>
+            }
+            <!-- O erro 'notSame' é aplicado ao FormGroup, mas podemos checar assim: -->
+            @if (f['confirmaSenha'].hasError('notSame')) {
+              <mat-error>As senhas não coincidem</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </div>
+
+      <mat-card-actions>
+        <button matButton="elevated" color="primary" [disabled]="form.invalid" type="submit">Salvar</button>
+      </mat-card-actions>
+    </mat-card-content>
+  </mat-card>
+</form>

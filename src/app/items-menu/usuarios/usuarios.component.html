@@ -1,0 +1,21 @@
+<custom-listagem
+  [title]="showForm() ? 'Cadastro de Usuário' : 'Listagem de Usuários'"
+  [dataSource]="dataSource"
+  [columns]="columns"
+  [enumMap]="nivelMap"
+  [showForm]="showForm()"
+  [loading]="loading()"
+  (novo)="onNovoClick()"
+  (editar)="onEditarClick($event)"
+  (filtrar)="dataSource.filter = $event"
+  [id]="registro?.id"
+>
+  <!-- Injeção do formulário específico -->
+  <ng-template #form>
+    <form-usuario 
+      (voltar)="hideForm()" 
+      (salvar)="onSalvar($event)" 
+      [registro]="registro" 
+      [loading]="loading()" />
+  </ng-template>
+</custom-listagem>

@@ -1,0 +1,7 @@
+  <mat-card-content>
+    <ng-content></ng-content>
+  </mat-card-content>
+  <mat-card-actions class="col-span-full flex justify-between gap-2">
+    <button matButton="tonal" color="primary" (click)="onVoltarClick()">Voltar</button>
+    <button matButton="filled" color="primary" (click)="onSalvarClick()" [disabled]="!canSave() || loading()" >Salvar</button>
+  </mat-card-actions>

@@ -1,0 +1,43 @@
+
+@use '@angular/material' as mat;
+
+/* ==========================================================================
+   Estilos customizados para o MatSnackBar
+   ========================================================================== */
+
+// Estilo base para todos os snackbars customizados
+.success-snackbar, .warning-snackbar, .error-snackbar {
+  color: white; // Cor do texto principal
+
+  // Estilo para o botão "Fechar"
+  .mdc-button__label {
+    color: white !important; // Cor do texto do botão
+  }
+}
+
+// Estilo para Sucesso (Verde)
+.success-snackbar {
+  @include mat.snack-bar-overrides((
+    container-color: #4CAF50,
+    button-color: white,
+    supporting-text-color: white,
+  ));
+}
+
+// Estilo para Aviso (Amarelo/Âmbar)
+.warning-snackbar {
+  @include mat.snack-bar-overrides((
+    container-color: #FFC107,
+    button-color: #1f1f1f, // Texto/botão escuro para contraste
+    supporting-text-color: #1f1f1f,
+  ));
+}
+
+// Estilo para Erro (Vermelho)
+.error-snackbar {
+  @include mat.snack-bar-overrides((
+    container-color: var(--mat-sys-error),
+    button-color: var(--mat-sys-error-container),
+    supporting-text-color: var(--mat-sys-on-error),
+  ));
+}
