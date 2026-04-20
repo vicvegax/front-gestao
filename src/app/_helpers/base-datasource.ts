@@ -38,6 +38,10 @@ export abstract class BaseDataSource<T> extends DataSource<T> {
   }
 
   updateParams(newParams: any) {
+    if(newParams.dir === '') {
+      newParams.sort = undefined;
+      newParams.dir = undefined;
+    }
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: newParams,
@@ -55,16 +59,30 @@ export abstract class BaseDataSource<T> extends DataSource<T> {
         const page = +(params!['page'] || 0);
         const size = +(params!['size'] || 25);
         const sort = params!['sort'];
-        const dir = params!['dir'] || 'asc';
+        const dir = params!['dir'];// || 'asc';
 
         let result = [...filtered]
-        if(sort) {
+        if (sort && dir) {
           result.sort((a: any, b: any) => {
-            const res = a[sort] < b[sort] ? -1 : 1;
+            if (!(sort in a) || !(sort in b)) {
+              console.warn(`Ordenação ignorada: propriedade '${sort}' não existe em todos os registros.`);
+              return 0;
+            }
+
+            const aVar = a[sort];
+            const bVar = b[sort];
+            const sortA = aVar && typeof aVar === 'object' ? aVar['nome'] ?? aVar : aVar;
+            const sortB = bVar && typeof bVar === 'object' ? bVar['nome'] ?? bVar : bVar;
+
+            if (sortA == null && sortB == null) return 0;
+            if (sortA == null) return dir === 'asc' ? 1 : -1;
+            if (sortB == null) return dir === 'asc' ? -1 : 1;
+
+            const res = sortA < sortB ? -1 : sortA > sortB ? 1 : 0;
             return dir === 'asc' ? res : -res;
           });
         }
-        
+
         const start = page * size;
         return result.slice(start, start + size);
 

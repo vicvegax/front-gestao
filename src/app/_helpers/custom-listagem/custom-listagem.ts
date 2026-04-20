@@ -31,7 +31,7 @@ export class CustomListagem<T> {
   route = inject(ActivatedRoute);
 
   // Inputs usando a nova sintaxe Signal do Angular
-  columns = input.required<{key: string, value?: (row: unknown) => string, label: string, type?: string}[]>();
+  columns = input.required<{key: string, value?: (row: T) => string, label: string, type?: string}[]>();
   dataSource = input.required<BaseDataSource<T>>();
   id = input<number | undefined>(undefined);
   loading = input<boolean>(false);

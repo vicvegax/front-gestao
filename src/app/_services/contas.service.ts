@@ -2,20 +2,20 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import { Observable } from 'rxjs';
-import { OrgaoAllDto as DataDto, OrgaoAtivoDto as AtivoDto } from '@app/_dto';
+import { ContasAllDto as DataDto, ContaAtivoDto as AtivoDto } from '@app/_dto';
 
 @Injectable({
   providedIn: 'root'
 })
-export class OrgaosService {
+export class ContaService {
   http = inject(HttpClient);
 
   public getAll(): Observable<DataDto[]> {
     return this.http.get<DataDto[]>(environment.api + 'orgaos')
   }
 
-  public getDisponivel(): Observable<AtivoDto[]> {
-    return this.http.get<AtivoDto[]>(environment.api + 'orgaos/ativos')
+  public getAtivos(): Observable<AtivoDto[]> {
+    return this.http.get<AtivoDto[]>(environment.api + 'contas/ativos')
   }
 
   public save(data: DataDto): Observable<DataDto> {

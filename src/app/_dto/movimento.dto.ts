@@ -1,8 +1,12 @@
 import {Decimal} from 'decimal.js';
+import { DateTime } from 'luxon';
 
-export interface MovimentoListResponse {
-  data: MovimentoDto[];
-  saldo_anterior: number;
+export interface MovimentoListResponse<T> {
+  data: T[];
+  credito: string;
+  debito: string;
+  anterior: string;
+  emConta: string;
 }
 
 export interface MovimentoDto {
@@ -29,12 +33,25 @@ export interface MovimentoDto {
     nome: string;
   };
   numeroDocumento: string;
-  valor: string;
   natureza: string;
-  dataVencimento: string;
+  obs: string;
   competencia: string;
   descricao: string;
-  obs: string;
+  ultimaParcela?: number;
+  //OMITIDOS
+  valor: string;
+  dataVencimento: string;
+  dataBaixa?: string;
+  dataEfetivou?: string;
+  dataEntregou?: string;
+}
+
+export interface Movimento extends Omit<MovimentoDto, 'valor' | 'dataVencimento' | 'dataBaixa' | 'dataEfetivou' | 'dataEntregou'>{
+  valor: Decimal;
+  dataVencimento: DateTime;
+  dataBaixa?: DateTime;
+  dataEfetivou?: DateTime;
+  dataEntregou?: DateTime;
 }
 
 export interface MovimentoDashBoardDto {

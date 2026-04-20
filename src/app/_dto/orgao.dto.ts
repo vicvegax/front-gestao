@@ -1,4 +1,4 @@
-export interface OrgaoAllDto {
+export interface ContasAllDto {
   id: number;
   nome: string;
   sigla: string;
@@ -6,8 +6,8 @@ export interface OrgaoAllDto {
   ativo: boolean;
 }
 
-export interface OrgaoAtivoDto {
+export interface ContaAtivoDto {
   id: number;
+  codigo: string;
   nome: string;
-  sigla: string;
 }
