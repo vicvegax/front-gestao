@@ -3,13 +3,13 @@
       [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
       [mode]="'over'"
       [opened]="false">
-    <!-- <mat-toolbar class="mat-toolbar-logo"></mat-toolbar> -->
+    <mat-toolbar class="mat-toolbar-logo"><img src="solucao.png" class="logo" /></mat-toolbar>
+     
     <app-items-menu class="menu-list" (click)="onItemsMenuClick($event, drawer)"></app-items-menu>
   </mat-sidenav>
   <mat-sidenav-content>
     <mat-toolbar class="mat-toolbar-header">
       <!-- @if (isHandset$ | async) { -->
-       <img src="solucao.png" class="logo" />
         <button
           type="button"
           aria-label="Toggle sidenav"
@@ -17,6 +17,7 @@
           (click)="drawer.toggle()">
           <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
         </button>
+       <img src="solucao.png" class="logo" />
       <!-- } -->
       <span>Solução{{ modoDev ? ' - DEV' : '' }}{{ usuario?.modoDev ? '(DB-DEV)' : '' }}</span>
       <span class="spacer"></span>

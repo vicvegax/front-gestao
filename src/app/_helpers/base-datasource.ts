@@ -15,6 +15,9 @@ export abstract class BaseDataSource<T> extends DataSource<T> {
 
   abstract loadData(): Promise<void>;
 
+  defaultPage = 0;
+  defaultSize = 25;
+
   // Estado principal usando Signals
   readonly dataSignal = signal<T[]>([]);
   readonly filterSignal = signal<string>('');
@@ -56,8 +59,8 @@ export abstract class BaseDataSource<T> extends DataSource<T> {
       toObservable(this.queryParams),
     ]).pipe(
       map(([filtered, params]) => {
-        const page = +(params!['page'] || 0);
-        const size = +(params!['size'] || 25);
+        const page = +(params!['page'] || this.defaultPage);
+        const size = +(params!['size'] || this.defaultSize);
         const sort = params!['sort'];
         const dir = params!['dir'];// || 'asc';
 

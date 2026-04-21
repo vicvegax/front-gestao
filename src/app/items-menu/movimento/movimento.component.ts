@@ -14,15 +14,17 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { ValorPipe } from "../../_helpers/valor-pipe";
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { Agendado, EmConta, Liquidado } from '@app/_helpers/situacao.constant';
 import { DateTime } from 'luxon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
-import { MatDatepickerModule, MatDateRangeInput, MatDateRangePicker } from '@angular/material/datepicker';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ContaService } from '@app/_services';
 import { toSignal } from '@angular/core/rxjs-interop';
 import Decimal from 'decimal.js';
+import { SelectionModel } from '@angular/cdk/collections';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-movimento',
@@ -30,20 +32,25 @@ import Decimal from 'decimal.js';
   imports: [
     MatCardModule, LoadingBarComponent, MatFormFieldModule, MatIcon, MatTableModule, MatSortModule,
     MatPaginatorModule, MatButtonModule, DatePipe, MatSelectModule, MatLabel, MatInputModule,
-    ValorPipe, MatDatepickerModule, MatDateRangeInput, MatDateRangePicker, 
-]
+    ValorPipe, MatDatepickerModule, MatCheckboxModule, NgClass
+  ]
 })
 export class ListagemMovimento extends BaseComponent<DataDto> {
+
   route = inject(ActivatedRoute);
 
   contaService = inject(ContaService);
   contas = toSignal(this.contaService.getAtivos(), { initialValue: []});
 
   dataSource = new MovimentoDataSource();
+  selecionados = new SelectionModel<any>(true, []);
+  selecionadosSignal = signal<any[]>([]);
+
   saldoAnterior = this.dataSource.saldoAnterior; // Signal de Decimal
   saldoCredito = this.dataSource.saldoCredito;
   saldoDebito = this.dataSource.saldoDebito;
   saldoEmConta = this.dataSource.saldoEmConta;
+  override loading = this.dataSource.loading;
 
   // 2. Cálculo do Saldo Atual (Computado e Reativo)
   saldoAtual = computed(() => {
@@ -58,13 +65,17 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
       .minus(debito);
   });
 
-  saldoProjetado = computed(() => {
-    const anterior = this.saldoAnterior();
-    const emConta = this.saldoEmConta();
-    if(!anterior || !emConta) return new Decimal(0);
+  totalGeral = computed(() => this.dataSource.dataSignal().reduce((acc, row) => acc.plus(row.valor), new Decimal(0)));
+  totalSelecionado = computed(() => this.selecionadosSignal().reduce((acc, row) => acc.plus(row.valor), new Decimal(0)));
+  
+  // 3. O Total Exibido
+  totalExibido = computed(() => {
+    return this.selecionadosSignal().length > 0 ? this.totalSelecionado() : this.totalGeral();
+  });
 
-    return anterior.plus(emConta);
-  })
+  labelTotal = computed(() => {
+    return this.selecionados.hasValue() ? 'Total Selecionado' : 'Total Geral';
+  });
 
   title = signal('Movimento');
   novo = output<void>();
@@ -74,8 +85,48 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
   dataInicial = signal<DateTime>(DateTime.now());
   dataFinal = signal<DateTime>(DateTime.now());
 
+  saldoProjetado = computed(() => {
+    const anterior = this.saldoAnterior();
+    const emConta = this.saldoEmConta();
+    if(!anterior || !emConta) return new Decimal(0);
+    const emContaSelecionado = this.totalEmContaSelecionado();
+
+    return anterior.plus(this.selecionadosSignal().length > 0 ? emContaSelecionado : emConta);
+  })
+
+  totalEmContaSelecionado = computed(() => {
+    return this.selecionadosSignal().reduce((acc, row) => {
+      // Soma apenas se a situação for 'C'
+      if (row.situacaoMovimento === 'C') {
+        const valor = row.valor ? new Decimal(row.valor) : new Decimal(0);
+        return acc.plus(valor);
+      }
+      return acc;
+    }, new Decimal(0));
+  });
+
+  toggleLinha(row: any) {
+    this.selecionados.toggle(row);
+    this.selecionadosSignal.set([...this.selecionados.selected]);
+  }
+
+  /** Verifica se o número de linhas selecionadas é igual ao total de linhas. */
+  isAllSelected() {
+    const numSelected = this.selecionados.selected.length;
+    const numRows = this.dataSource.dataSignal().length;
+    return numSelected === numRows;
+  }
+
+  masterToggle() {
+    this.isAllSelected() ?
+        this.selecionados.clear() :
+        this.selecionados.select(...this.dataSource.dataSignal());
+
+    this.selecionadosSignal.set([...this.selecionados.selected]);
+  }
+
   get displayedColumns() {
-    return ['index', 'situacaoMovimento', 'unidade', 'pessoal', 'evento', 'dataVencimento', 'dataBaixa', 'competencia', 'valor', 'dataEntregou', 'id', 'acoes'];
+    return ['index', 'situacaoMovimento', 'unidade', 'pessoal', 'evento', 'dataVencimento', 'dataBaixa', 'competencia', 'valor', 'tipoDocumento', 'dataEntregou', 'id', 'acoes'];
   }
   
   handleSortEvent(e: Sort) {
@@ -101,11 +152,13 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
       const conta = this.idConta();
       const dataInicial = this.dataInicial();
       const dataFinal = this.dataFinal();
-      if(conta !== undefined && dataInicial.isValid && dataFinal.isValid) {
+      if(conta !== undefined && dataInicial.isValid && dataFinal.isValid && dataFinal >= dataInicial) {
         this.dataSource.setCriteria(conta, dataInicial.toISODate()!, dataFinal.toISODate()!);
         this.dataSource.loadData();
+        // this.loading.set(false);
       }
     })
+
   }
 
   async onSalvar(row: DataDto) {
@@ -119,12 +172,11 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
       let mensagemErro = "Ocorreu um Erro inesperado ao salvar o registro.";
       if (err instanceof HttpErrorResponse) {
         if(err.status === HttpStatusCode.Conflict) {
-          // this.formComponent.setFieldError('nome', { conflict: 'Este Serviço já existe!' });
-          this.showErrorToast('Erro ao salvar. Já existe um registro com este nome.');
+          this.showErrorToast('Erro ao salvar. Já existe um registro como este.');
           return;
         }
         const errorMessage = err.error?.message;
-        console.error("Erro a API", errorMessage || err.error);
+        console.error("Erro na API", errorMessage || err.error);
         
         if(errorMessage) {
           mensagemErro = Array.isArray(errorMessage)
@@ -142,9 +194,9 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
 
   getSituacaoClasses(situacao: string) {
     return {
-      [Liquidado]: 'bg-yellow-200! text-yellow-800!',
-      [Agendado]: 'bg-orange-300! text-orange-800!',
-      [EmConta]: 'bg-cyan-400! text-cyan-800!'
+      [Liquidado]: '!bg-yellow-200 !text-yellow-800',
+      [Agendado]: '!bg-orange-300 !text-orange-800',
+      [EmConta]: '!bg-cyan-400 !text-cyan-800'
     }[situacao] || '';
   }
 

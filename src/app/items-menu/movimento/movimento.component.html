@@ -3,7 +3,6 @@
     <mat-card-title>{{ title() }}</mat-card-title>
   </mat-card-header>
 
-  <loading-bar [visible]="loading()"/>
 
   <mat-card-content>
     <div class="grid grid-cols-2 gap-x-4 w-full">
@@ -18,7 +17,7 @@
         </mat-form-field>
 
         <!-- Date Range -->
-        <mat-form-field class="col-span-2">
+        <!-- <mat-form-field class="col-span-2">
           <mat-label>Período</mat-label>
           <mat-date-range-input [rangePicker]="picker">
             <input matStartDate [value]="dataInicial()" (dateChange)="$event.value && dataInicial.set($event.value)">
@@ -26,7 +25,28 @@
           </mat-date-range-input>
           <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-date-range-picker #picker></mat-date-range-picker>
+        </mat-form-field> -->
+        <mat-form-field class="col-span-1">
+          <mat-label>Data Inicial</mat-label>
+          <input matInput [matDatepicker]="pickerInicio" 
+                [value]="dataInicial()" 
+                [max]="dataFinal()"
+                (dateChange)="$event.value && dataInicial.set($event.value)">
+          <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+          <mat-datepicker #pickerInicio></mat-datepicker>
         </mat-form-field>
+
+        <mat-form-field class="col-span-1">
+          <mat-label>Data Final</mat-label>
+          <input matInput [matDatepicker]="pickerFim" 
+                [value]="dataFinal()" 
+                [min]="dataInicial()"
+                (dateChange)="$event.value && dataFinal.set($event.value)">
+          <mat-datepicker-toggle matIconSuffix [for]="pickerFim"></mat-datepicker-toggle>
+          <mat-datepicker #pickerFim></mat-datepicker>
+        </mat-form-field>
+
+        
       </div>
       <div class="grid grid-cols-3 gap-x-4 w-full">
         <mat-form-field floatLabel="always" class="col-span-1">
@@ -63,18 +83,38 @@
       </div>
     </div>
 
-    <div class="w-full overflow-x-auto">
+    <div class="w-full overflow-scroll h-[500px] relative">
+      <loading-bar [visible]="loading()"/>
       <table mat-table [dataSource]="dataSource" matSort 
         (matSortChange)="handleSortEvent($event)"
         [matSortActive]="route.snapshot.queryParams['sort']"
         [matSortDirection]="route.snapshot.queryParams['dir'] || 'asc'"
-        class="[--mat-table-row-item-container-height:40px] w-full "
+        class="[--mat-table-row-item-container-height:36px] w-full "
       >
         <ng-container matColumnDef="index">
-          <th mat-header-cell *matHeaderCellDef>Ord.</th>
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="flex items-center gap-3 justify-between">
+              <mat-checkbox (click)="$event.stopPropagation()"
+                    (change)="$event ? masterToggle() : null"
+                    [checked]="selecionados.hasValue() && isAllSelected()"
+                    [indeterminate]="selecionados.hasValue() && !isAllSelected()"
+                    >
+              </mat-checkbox>
+                    <!-- <input type="checkbox" /> -->
+              <span class="text-right font-medium">Ord.</span>
+            </div>
+          </th>
           <td mat-cell *matCellDef="let row; let i = index" class="!text-right" >
-            {{ i + 1 + (paginator.pageIndex * paginator.pageSize) }}
+            <div class="flex items-center gap-3 justify-between">
+              <mat-checkbox (click)="$event.stopPropagation()"
+                    (change)="$event ? toggleLinha(row) : null"
+                    [checked]="selecionados.isSelected(row)">
+              </mat-checkbox>
+                    <!-- <input type="checkbox" /> -->
+              <span class="text-right font-medium">{{ i + 1 + (paginator.pageIndex * paginator.pageSize) }}</span>
+            </div>
           </td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <ng-container matColumnDef="situacaoMovimento">
@@ -82,21 +122,25 @@
           <td mat-cell *matCellDef="let row" class="text-center! font-semibold!"
             [class]="getSituacaoClasses(row.situacaoMovimento)">{{ row.situacaoMovimento }}
           </td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <ng-container matColumnDef="unidade">
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="whitespace-nowrap">Centro de Custos</th>
           <td mat-cell *matCellDef="let row" class="max-w-[150px] truncate px-2">{{ row.unidade.nome }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <ng-container matColumnDef="pessoal">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Favorecido</th>
           <td mat-cell *matCellDef="let row" class="max-w-[250px] truncate px-2">{{ row.pessoal.nome }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <ng-container matColumnDef="evento">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Evento</th>
           <td mat-cell *matCellDef="let row" class="max-w-[250px] truncate px-2">{{ row.evento.nome }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <ng-container matColumnDef="dataVencimento">
@@ -104,6 +148,7 @@
           <td mat-cell *matCellDef="let row" class="!text-right "
             [class]="getDataVencimentoClass(row)"
           >{{ row.dataVencimento | date: 'dd/LL/yyy' }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <ng-container matColumnDef="dataBaixa">
@@ -111,42 +156,65 @@
           <td mat-cell *matCellDef="let row" class="!text-right "
             [class]="getDataBaixaClass(row)"
           >{{ row.dataBaixa | date: 'dd/LL/yyy' }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <ng-container matColumnDef="competencia">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Compet.</th>
           <td mat-cell *matCellDef="let row" class="!text-right ">{{ row.competencia }}</td>
+          <!-- <td mat-footer-cell *matFooterCellDef class="font-bold text-right pr-4 bg-surface-variant">{{ labelTotal() }}:</td> -->
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <ng-container matColumnDef="valor">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Valor</th>
-          <td mat-cell *matCellDef="let row" class="!text-right whitespace-nowrap !font-medium"
-          [class]="row.valor | valorDC:'DC'"
+          <td mat-cell *matCellDef="let row" class="!text-right whitespace-nowrap !font-medium "
+            [class]="row.valor | valorDC:'DC'"
           >{{ row.valor | valorDC }}</td>
+          <td mat-footer-cell *matFooterCellDef class="!text-right font-bold bg-surface-variant whitespace-nowrap"
+            [class]="totalExibido() | valorDC:'DC'"
+          >
+            {{ totalExibido() | valorDC }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="tipoDocumento">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo de Documento</th>
+          <td mat-cell *matCellDef="let row" class="max-w-[250px] truncate px-2">{{ row.tipoDocumento.nome }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <ng-container matColumnDef="dataEntregou">
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="whitespace-nowrap">Dt. Entreg..</th>
           <td mat-cell *matCellDef="let row" class="!text-right ">{{ row.dataEntregou | date: 'dd/LL/yyy' }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
         <ng-container matColumnDef="id">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Id.</th>
           <td mat-cell *matCellDef="let row" class="!text-right">{{ row.id }}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
-        <ng-container matColumnDef="acoes">
+        <ng-container matColumnDef="acoes" stickyEnd>
           <th mat-header-cell *matHeaderCellDef class="col-acoes"></th>
-          <td mat-cell *matCellDef="let row" class="col-acoes">
+          <td mat-cell *matCellDef="let row" class="col-acoes !bg-white dark:!bg-gray-950 !z-10 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">
             <button mat-icon-button (click)="editar.emit(row)" [disabled]="loading()">
               <mat-icon>edit</mat-icon>
             </button>
           </td>
+          <td mat-footer-cell *matFooterCellDef></td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"
+          class="!bg-slate-200 !text-slate-700 !border-b-2 !border-slate-300 !font-medium !sticky !top-0 !z-20 !h-[36px]"
+        ></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"
           [class.row-indisponivel]="row.ativo !== undefined && !row.ativo"
+          [ngClass]="{ '!bg-blue-100 !dark:bg-blue-900/20': selecionados.isSelected(row) }"
+        ></tr>
+        <tr mat-footer-row *matFooterRowDef="displayedColumns; sticky: true"
+          class="!text-right !font-bold !bg-slate-200 !text-slate-900 !border-t-2 !border-slate-300 !sticky !bottom-0 !z-20 !h-[36px]"
         ></tr>
       </table>
     </div>
@@ -155,8 +223,8 @@
       <button mat-flat-button (click)="novo.emit()" [disabled]="loading()">Novo Registro</button>
       <mat-paginator 
         [length]="dataSource.filteredData().length"
-        [pageIndex]="route.snapshot.queryParams['page'] || 0"
-        [pageSize]="route.snapshot.queryParams['size'] || 100"
+        [pageIndex]="route.snapshot.queryParams['page'] || dataSource.defaultPage"
+        [pageSize]="route.snapshot.queryParams['size'] || dataSource.defaultSize"
         [pageSizeOptions]="[100, 250, 1000]" 
         (page)="handlePageEvent($event)"
         #paginator

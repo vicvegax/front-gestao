@@ -34,9 +34,9 @@ export interface MovimentoDto {
   };
   numeroDocumento: string;
   natureza: string;
-  obs: string;
   competencia: string;
   descricao: string;
+  obs: string;
   ultimaParcela?: number;
   //OMITIDOS
   valor: string;
