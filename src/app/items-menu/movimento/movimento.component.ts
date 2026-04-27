@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, output, signal } from '@angular/core';
 import { MovimentoDataSource } from './movimento-datasource';
-import { Movimento as DataDto, Movimento } from '@app/_dto';
-import { BaseComponent } from '@app/_helpers';
+import { Movimento as DataDto } from '@app/_dto';
+import { BaseComponent, TooltipTruncadoDirective, ValorPipe } from '@app/_helpers';
 import { lastValueFrom } from 'rxjs';
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 import { MatCardModule } from '@angular/material/card';
@@ -13,8 +13,7 @@ import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { ValorPipe } from "../../_helpers/valor-pipe";
-import { DatePipe, NgClass } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Agendado, EmConta, Liquidado } from '@app/_helpers/situacao.constant';
 import { DateTime } from 'luxon';
 import { MatSelectModule } from '@angular/material/select';
@@ -25,6 +24,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import Decimal from 'decimal.js';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-movimento',
@@ -32,17 +32,18 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
   imports: [
     MatCardModule, LoadingBarComponent, MatFormFieldModule, MatIcon, MatTableModule, MatSortModule,
     MatPaginatorModule, MatButtonModule, DatePipe, MatSelectModule, MatLabel, MatInputModule,
-    ValorPipe, MatDatepickerModule, MatCheckboxModule, NgClass
+    ValorPipe, MatDatepickerModule, MatCheckboxModule, MatTooltipModule, TooltipTruncadoDirective
   ]
 })
 export class ListagemMovimento extends BaseComponent<DataDto> {
-
   route = inject(ActivatedRoute);
 
   contaService = inject(ContaService);
   contas = toSignal(this.contaService.getAtivos(), { initialValue: []});
 
   dataSource = new MovimentoDataSource();
+  override loading = this.dataSource.loading;
+
   selecionados = new SelectionModel<any>(true, []);
   selecionadosSignal = signal<any[]>([]);
 
@@ -50,7 +51,6 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
   saldoCredito = this.dataSource.saldoCredito;
   saldoDebito = this.dataSource.saldoDebito;
   saldoEmConta = this.dataSource.saldoEmConta;
-  override loading = this.dataSource.loading;
 
   // 2. Cálculo do Saldo Atual (Computado e Reativo)
   saldoAtual = computed(() => {
@@ -60,44 +60,34 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
 
     if(!anterior || !credito || !debito) return new Decimal(0);
     
-    return anterior
-      .plus(credito)
-      .minus(debito);
+    return anterior.plus(credito).plus(debito);
   });
 
-  totalGeral = computed(() => this.dataSource.dataSignal().reduce((acc, row) => acc.plus(row.valor), new Decimal(0)));
-  totalSelecionado = computed(() => this.selecionadosSignal().reduce((acc, row) => acc.plus(row.valor), new Decimal(0)));
+  somaValorTotal = computed(() => this.dataSource.dataSignal().reduce((acc, row) => acc.plus(row.valor), new Decimal(0)));
+  somaValorSelecionado = computed(() => this.selecionadosSignal().reduce((acc, row) => acc.plus(row.valor), new Decimal(0)));
   
   // 3. O Total Exibido
-  totalExibido = computed(() => {
-    return this.selecionadosSignal().length > 0 ? this.totalSelecionado() : this.totalGeral();
+  footerValor = computed(() => {
+    return this.selecionadosSignal().length > 0 ? this.somaValorSelecionado() : this.somaValorTotal();
   });
 
-  labelTotal = computed(() => {
-    return this.selecionados.hasValue() ? 'Total Selecionado' : 'Total Geral';
-  });
-
-  title = signal('Movimento');
-  novo = output<void>();
-  editar = output<DataDto>();
-
-  idConta = signal<number | undefined>(undefined);
-  dataInicial = signal<DateTime>(DateTime.now());
-  dataFinal = signal<DateTime>(DateTime.now());
+  // labelTotal = computed(() => {
+  //   return this.selecionados.hasValue() ? 'Total Selecionado' : 'Total Geral';
+  // });
 
   saldoProjetado = computed(() => {
-    const anterior = this.saldoAnterior();
+    const saldoAtual = this.saldoAtual();
     const emConta = this.saldoEmConta();
-    if(!anterior || !emConta) return new Decimal(0);
-    const emContaSelecionado = this.totalEmContaSelecionado();
+    if(!saldoAtual || !emConta) return new Decimal(0);
+    const emContaSelecionado = this.somaEmContaSelecionado();
 
-    return anterior.plus(this.selecionadosSignal().length > 0 ? emContaSelecionado : emConta);
+    return saldoAtual.plus(this.selecionadosSignal().length > 0 ? emContaSelecionado : emConta);
   })
 
-  totalEmContaSelecionado = computed(() => {
+  somaEmContaSelecionado = computed(() => {
     return this.selecionadosSignal().reduce((acc, row) => {
       // Soma apenas se a situação for 'C'
-      if (row.situacaoMovimento === 'C') {
+      if (row.situacaoMovimento === EmConta) {
         const valor = row.valor ? new Decimal(row.valor) : new Decimal(0);
         return acc.plus(valor);
       }
@@ -117,6 +107,7 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
     return numSelected === numRows;
   }
 
+  //Inverte a seleção de todas as linhas
   masterToggle() {
     this.isAllSelected() ?
         this.selecionados.clear() :
@@ -124,6 +115,15 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
 
     this.selecionadosSignal.set([...this.selecionados.selected]);
   }
+
+  title = signal('Movimento');
+  novo = output<void>();
+  editar = output<DataDto>();
+
+  idConta = signal<number | undefined>(undefined);
+  dataInicial = signal<DateTime>(DateTime.now());
+  dataFinal = signal<DateTime>(DateTime.now());
+
 
   get displayedColumns() {
     return ['index', 'situacaoMovimento', 'unidade', 'pessoal', 'evento', 'dataVencimento', 'dataBaixa', 'competencia', 'valor', 'tipoDocumento', 'dataEntregou', 'id', 'acoes'];
@@ -194,25 +194,31 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
 
   getSituacaoClasses(situacao: string) {
     return {
-      [Liquidado]: '!bg-yellow-200 !text-yellow-800',
-      [Agendado]: '!bg-orange-300 !text-orange-800',
-      [EmConta]: '!bg-cyan-400 !text-cyan-800'
+      [Liquidado]: 'cell-situacao-liquidado',
+      [Agendado]: 'cell-situacao-agendado',
+      [EmConta]: 'cell-situacao-em-conta'
     }[situacao] || '';
   }
 
-  getDataVencimentoClass(row: Movimento) {
+  getDataVencimentoClass(row: DataDto ) {
     if(row.ultimaParcela) {
-      return 'bg-orange-300!'
+      return 'cell-ultima-parcela'
     }
 
     return '';
   }
 
-  getDataBaixaClass(row: Movimento) {
+  getDataBaixaClass(row: DataDto) {
     if(row.situacaoMovimento != Liquidado && row.dataVencimento.startOf('day') < DateTime.now().startOf('day') ) {
-      return 'bg-red-300!'
+      return 'cell-data-vencido'
     }
 
+    return '';
+  }
+
+  getRowClass(row: DataDto) {
+    if(this.selecionados.isSelected(row)) return 'row-selecionado';
+    if(row.dataEntregou && row.situacaoMovimento !== Liquidado) return 'row-entregue';
     return '';
   }
 }

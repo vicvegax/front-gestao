@@ -12,8 +12,9 @@ export class ValorPipe implements PipeTransform {
 
   transform(value: Decimal | undefined, cor?: 'C' | 'D' | 'DC'): string {
     if(cor) {
-      if(!value || value.lessThan(0) || cor == 'D') return corDebito;
-      return corCredito;
+      if(!value || value.lessThan(0) || cor == 'D') return 'cell-valor-debito';
+      if(value.isZero()) return 'cell-valor-zero';
+      return 'cell-valor-credito';
     } else {
       if (!value || value.isZero()) return '0,00';
       

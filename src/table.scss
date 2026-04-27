@@ -1,21 +1,69 @@
+@use "tailwindcss";
+
 .mat-mdc-row .mat-mdc-cell {
   cursor: pointer;
 }
 
 .mat-mdc-row:hover .mat-mdc-cell {
-  background: whitesmoke;
+  background: rgba($color: #F0F0F0, $alpha: .5);
 }
+
 
 
 /* Linha com fundo vermelho bem suave */
-.row-indisponivel {
-  background-color: #fff1f0 !important; /* Vermelho muito claro */
+.row-entregue {
+  background-color: var(--color-fuchsia-100) !important;
+  color: var(--color-fuchsia-900) !important;
 }
 
-/* Célula com texto em destaque e negrito */
-.cell-destaque-vermelho {
-  color: #d32f2f;
-  // font-weight: bold;
+// !bg-blue-100 !dark:bg-blue-900/20
+.row-selecionado {
+  background-color: var(--color-blue-100) !important;
+  color: var(--color-blue-900) !important;
+}
+
+.cell-ultima-parcela {
+  background-color: var(--color-orange-200) !important;
+  color: var(--color-orange-900) !important;
+}
+
+.cell-data-vencido {
+  background-color: var(--color-red-300) !important;
+}
+
+.col-situacao {
+  text-align: center !important;
+  font-weight: bold !important;
+}
+
+.cell-situacao-agendado {
+  background-color: var(--color-orange-200) !important;
+  color: var(--color-orange-900) !important;
+}
+
+.cell-situacao-liquidado {
+  background-color: var(--color-yellow-100) !important;
+  color: var(--color-yellow-800) !important;
+}
+
+.cell-situacao-em-conta {
+  background-color: var(--color-cyan-200) !important;
+  color: var(--color-cyan-800) !important;
+}
+
+.cell-valor-credito {
+  // background-color: var(--color-cyan-200) !important;
+  color: var(--color-blue-700) !important;
+}
+
+.cell-valor-zero {
+  background-color: var(--color-slate-200) !important;
+  color: var(--color-slate-700) !important;
+}
+
+.cell-valor-debito {
+  // background-color: var(--color-cyan-200) !important;
+  color: var(--color-red-500) !important;
 }
 
 .col-acoes {
@@ -26,7 +74,7 @@
 }
 
 .col-id {
-  width: 5rem;
+  width: 7rem;
   text-align: right !important;
   justify-content: right !important;
 }

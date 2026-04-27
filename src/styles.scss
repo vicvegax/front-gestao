@@ -1,7 +1,8 @@
 @use '@angular/material' as mat;
-@use './toaster.scss';
-@use './table.scss';
 @use "tailwindcss";
+
+// @use './toaster.scss';
+// @use './table.scss';
 
 html {
   @include mat.theme((

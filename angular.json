@@ -56,7 +56,9 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "src/table.scss",
+              "src/toaster.scss"
             ]
           },
           "configurations": {

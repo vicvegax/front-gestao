@@ -11,3 +11,5 @@ export * from './custom-form/custom-form.component';
 export * from './custom-listagem/custom-listagem';
 export * from './fone.pipe';
 export * from './cpf.validator';
+export * from './valor-pipe';
+export * from './tooltip-truncado.directive';
