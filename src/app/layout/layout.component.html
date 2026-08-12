@@ -1,45 +1,48 @@
-<mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #drawer class="sidenav" fixedInViewport
-      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
-      [mode]="'over'"
-      [opened]="false">
-    <mat-toolbar class="mat-toolbar-logo"><img src="solucao.png" class="logo" /></mat-toolbar>
-     
-    <app-items-menu class="menu-list" (click)="onItemsMenuClick($event, drawer)"></app-items-menu>
-  </mat-sidenav>
-  <mat-sidenav-content>
-    <mat-toolbar class="mat-toolbar-header">
-      <!-- @if (isHandset$ | async) { -->
-        <button
-          type="button"
-          aria-label="Toggle sidenav"
-          matIconButton
-          (click)="drawer.toggle()">
-          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+<div class="h-screen w-screen overflow-hidden">
+  <mat-sidenav-container class="w-full h-full">
+    <mat-sidenav #drawer class="sidenav" fixedInViewport
+        [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+        [mode]="'over'"
+        [opened]="false">
+      <mat-toolbar class="mat-toolbar-logo"><img src="solucao.png" class="logo" /></mat-toolbar>
+      
+      <app-items-menu class="menu-list" (click)="onItemsMenuClick($event, drawer)"></app-items-menu>
+    </mat-sidenav>
+    <mat-sidenav-content class="!flex !flex-col !h-full !overflow-hidden">
+      <mat-toolbar class="mat-toolbar-header z-40 shrink-0">
+        <!-- @if (isHandset$ | async) { -->
+          <button
+            type="button"
+            aria-label="Toggle sidenav"
+            matIconButton
+            (click)="drawer.toggle()">
+            <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+          </button>
+        <img src="solucao.png" class="logo" />
+        <!-- } -->
+        <span>Solução{{ modoDev ? ' - DEV' : '' }}{{ usuario()?.modoDev ? '(DB-DEV)' : '' }}</span>
+        <span class="spacer"></span>
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
+          <mat-icon>account_circle</mat-icon>
+          <span>{{ usuario()?.nome }}</span>
         </button>
-       <img src="solucao.png" class="logo" />
-      <!-- } -->
-      <span>Solução{{ modoDev ? ' - DEV' : '' }}{{ usuario?.modoDev ? '(DB-DEV)' : '' }}</span>
-      <span class="spacer"></span>
-      <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-button">
-        <mat-icon>account_circle</mat-icon>
-        <span>{{ usuario?.nome }}</span>
-      </button>
 
-      <mat-menu #userMenu="matMenu">
-        <button mat-menu-item routerLink="alterar-senha">
-          <mat-icon>key</mat-icon>
-          <span>Mudar Senha</span>
-        </button>
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>Logout</span>
-        </button>
-      </mat-menu>
-    </mat-toolbar>
-    <!-- Add Content Here -->
-     <div class="home-container">
-      <router-outlet />
-     </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item routerLink="alterar-senha">
+            <mat-icon>key</mat-icon>
+            <span>Mudar Senha</span>
+          </button>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </mat-menu>
+      </mat-toolbar>
+
+      <!-- Add Content Here -->
+      <div class="grow overflow-auto">
+        <router-outlet />
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

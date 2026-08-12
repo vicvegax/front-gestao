@@ -31,7 +31,7 @@ import { LoginService } from '@app/_services';
 })
 export class LayoutComponent {
   loginService = inject(LoginService);
-  usuario?: UsuarioAuthDto | null = null;
+  usuario = signal<UsuarioAuthDto | null>(null);
   modoDev = environment.modoDev;
 
   private breakpointObserver = inject(BreakpointObserver);
@@ -43,7 +43,7 @@ export class LayoutComponent {
     );
 
   constructor() {
-    this.loginService.usuario.subscribe(u => this.usuario = u);
+    this.loginService.usuario.subscribe(u => this.usuario.set(u));
   }
   
   onItemsMenuClick(event: MouseEvent, drawer: MatSidenav) {

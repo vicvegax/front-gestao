@@ -6,9 +6,9 @@
     container-text-color: var(--mat-sys-on-primary),
   ));
 
-  // position: sticky;
+  position: sticky;
   top: 0;
-  z-index: 1;
+  // z-index: 0;
 
 }
 
@@ -29,10 +29,6 @@
 .logo {
   height: 50px;
   width: 100px;
-}
-
-.sidenav-container {
-  height: 100%;
 }
 
 .sidenav {
@@ -72,14 +68,4 @@
   justify-content: center;
   align-items: center;
   // width: 222px;
-}
-
-.home-container {
-  // width: min(100% - 32px, 1200px); 
-  
-  /* Centraliza o container na tela */
-  margin-left: auto;
-  margin-right: auto;
-
-  padding: 16px;
 }
