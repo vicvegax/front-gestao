@@ -25,6 +25,7 @@ import Decimal from 'decimal.js';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
   selector: 'app-movimento',
@@ -32,7 +33,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [
     MatCardModule, LoadingBarComponent, MatFormFieldModule, MatIcon, MatTableModule, MatSortModule,
     MatPaginatorModule, MatButtonModule, DatePipe, MatSelectModule, MatLabel, MatInputModule,
-    ValorPipe, MatDatepickerModule, MatCheckboxModule, MatTooltipModule, TooltipTruncadoDirective
+    ValorPipe, MatDatepickerModule, MatCheckboxModule, MatTooltipModule, TooltipTruncadoDirective,
+    MatAccordion, MatExpansionModule
   ]
 })
 export class ListagemMovimento extends BaseComponent<DataDto> {

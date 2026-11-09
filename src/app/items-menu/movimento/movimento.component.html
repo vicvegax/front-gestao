@@ -1,85 +1,96 @@
 <div class="!contents">
 
-  <div id="filtro" class="!sticky !left-0 shrink-0 z-30 w-full p-4">
-    <div class="grid grid-cols-2 gap-x-4">
-      <div class="grid grid-cols-3 gap-x-4">
-        <mat-form-field class="md:col-span-3" >
-          <mat-label>Conta</mat-label>
-          <mat-select [value]="idConta()" (selectionChange)="idConta.set($event.value)" >
-            @for(item of contas(); track item.id) {
-              <mat-option [value]="item.id">{{ item.codigo }} - {{ item.nome }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+<div id="filtro" class="">
+  <mat-accordion class="!sticky !left-0 shrink-0 z-30 w-full  p-4" multi>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title> Personal data </mat-panel-title>
+        <mat-panel-description>
+          Type your name and age
+          <mat-icon>account_circle</mat-icon>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
 
-        <mat-form-field class="col-span-1">
-          <mat-label>Data Inicial</mat-label>
-          <input matInput [matDatepicker]="pickerInicio" 
-                [value]="dataInicial()" 
-                [max]="dataFinal()"
-                (dateChange)="pickerInicio.close(); $event.value && dataInicial.set($event.value)">
-          <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
-          <mat-datepicker #pickerInicio (selectedChange)="pickerInicio.close()">
+      <div class="grid grid-cols-2 gap-x-4 px-4">
+        <div class="grid grid-cols-3 gap-x-4">
+          <mat-form-field class="md:col-span-3" >
+            <mat-label>Conta</mat-label>
+            <mat-select [value]="idConta()" (selectionChange)="idConta.set($event.value)" >
+              @for(item of contas(); track item.id) {
+                <mat-option [value]="item.id">{{ item.codigo }} - {{ item.nome }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
 
-          </mat-datepicker>
-        </mat-form-field>
+          <mat-form-field class="col-span-1">
+            <mat-label>Data Inicial</mat-label>
+            <input matInput [matDatepicker]="pickerInicio" 
+                  [value]="dataInicial()" 
+                  [max]="dataFinal()"
+                  (dateChange)="pickerInicio.close(); $event.value && dataInicial.set($event.value)">
+            <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+            <mat-datepicker #pickerInicio (selectedChange)="pickerInicio.close()">
 
-        <mat-form-field class="col-span-1">
-          <mat-label>Data Final</mat-label>
-          <input matInput [matDatepicker]="pickerFim" 
-                [value]="dataFinal()" 
-                [min]="dataInicial()"
-                (dateChange)="$event.value && dataFinal.set($event.value)">
-          <mat-datepicker-toggle matIconSuffix [for]="pickerFim"></mat-datepicker-toggle>
-          <mat-datepicker #pickerFim></mat-datepicker>
-        </mat-form-field>
+            </mat-datepicker>
+          </mat-form-field>
 
-        
+          <mat-form-field class="col-span-1">
+            <mat-label>Data Final</mat-label>
+            <input matInput [matDatepicker]="pickerFim" 
+                  [value]="dataFinal()" 
+                  [min]="dataInicial()"
+                  (dateChange)="$event.value && dataFinal.set($event.value)">
+            <mat-datepicker-toggle matIconSuffix [for]="pickerFim"></mat-datepicker-toggle>
+            <mat-datepicker #pickerFim></mat-datepicker>
+          </mat-form-field>
+
+          
+        </div>
+        <div class="grid grid-cols-3 gap-x-4 w-full">
+          <mat-form-field floatLabel="always" class="col-span-1">
+            <mat-label>Saldo Anterior</mat-label>
+            <input matInput type="text" class="text-right font-bold!" [value]="dataSource.saldoAnterior()?.toString()" 
+            [class]="saldoAnterior() | valorDC: 'DC'"
+            [value]="saldoAnterior() | valorDC" readonly />
+          </mat-form-field>
+
+          <mat-form-field floatLabel="always" class="col-span-1">
+            <mat-label>Saldo Atual</mat-label>
+            <input matInput type="text" class="text-right font-bold!" 
+            [class]="saldoAtual() | valorDC: 'DC'"
+            [value]="saldoAtual() | valorDC" readonly />
+          </mat-form-field>
+
+          <mat-form-field floatLabel="always" class="col-span-1">
+            <mat-label>Saldo Projetado</mat-label>
+            <input matInput type="text" class="text-right font-bold!" 
+            [class]="saldoProjetado() | valorDC: 'DC'"
+            [value]="saldoProjetado() | valorDC" readonly />
+          </mat-form-field>
+
+          <mat-form-field floatLabel="always" class="col-span-1">
+            <mat-label>Crédito</mat-label>
+            <input matInput type="text" class="text-right font-bold! text-blue-600!" 
+            [value]="saldoCredito() | valorDC" readonly />
+          </mat-form-field>
+
+          <mat-form-field floatLabel="always" class="col-span-1">
+            <mat-label>Débito</mat-label>
+            <input matInput type="text" class="text-right font-bold!" [class]="saldoDebito() | valorDC: 'D'" [value]="saldoDebito() | valorDC" readonly />
+          </mat-form-field>
+        </div>
       </div>
-      <div class="grid grid-cols-3 gap-x-4 w-full">
-        <mat-form-field floatLabel="always" class="col-span-1">
-          <mat-label>Saldo Anterior</mat-label>
-          <input matInput type="text" class="text-right font-bold!" [value]="dataSource.saldoAnterior()?.toString()" 
-          [class]="saldoAnterior() | valorDC: 'DC'"
-          [value]="saldoAnterior() | valorDC" readonly />
-        </mat-form-field>
-
-        <mat-form-field floatLabel="always" class="col-span-1">
-          <mat-label>Saldo Atual</mat-label>
-          <input matInput type="text" class="text-right font-bold!" 
-          [class]="saldoAtual() | valorDC: 'DC'"
-          [value]="saldoAtual() | valorDC" readonly />
-        </mat-form-field>
-
-        <mat-form-field floatLabel="always" class="col-span-1">
-          <mat-label>Saldo Projetado</mat-label>
-          <input matInput type="text" class="text-right font-bold!" 
-          [class]="saldoProjetado() | valorDC: 'DC'"
-          [value]="saldoProjetado() | valorDC" readonly />
-        </mat-form-field>
-
-        <mat-form-field floatLabel="always" class="col-span-1">
-          <mat-label>Crédito</mat-label>
-          <input matInput type="text" class="text-right font-bold! text-blue-600!" 
-          [value]="saldoCredito() | valorDC" readonly />
-        </mat-form-field>
-
-        <mat-form-field floatLabel="always" class="col-span-1">
-          <mat-label>Débito</mat-label>
-          <input matInput type="text" class="text-right font-bold!" [class]="saldoDebito() | valorDC: 'D'" [value]="saldoDebito() | valorDC" readonly />
-        </mat-form-field>
-      </div>
-    </div>
-  </div>
-
-
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>
+  
     <!-- ********************************************************************* -->
 
-  <div class="w-full px-4 shrink-0">
+  <div class="w-full shrink-0">
     <loading-bar [visible]="loading()"/>
   </div>
 
-  <div class="px-4">
+  <div class="">
     <table mat-table [dataSource]="dataSource" matSort 
       (matSortChange)="handleSortEvent($event)"
       [matSortActive]="route.snapshot.queryParams['sort']"
@@ -88,7 +99,7 @@
     >
       // CHECKBOX / NR. ORDEM
       <ng-container matColumnDef="index" sticky>
-        <th mat-header-cell *matHeaderCellDef>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header >
           <div class="flex items-center gap-3 justify-between">
             <mat-checkbox (click)="$event.stopPropagation()"
                   (change)="$event ? masterToggle() : null"
@@ -99,7 +110,7 @@
             <span class="text-right font-medium">Ord.</span>
           </div>
         </th>
-        <td mat-cell *matCellDef="let row; let i = index" class="!text-right !bg-slate-50 group-hover:!bg-slate-100 !z-10 transition-colors" >
+        <td mat-cell *matCellDef="let row; let i = index" class="!text-right !z-10 group-hover:!bg-slate-100 " >
           <div class="flex items-center gap-3 justify-between ">
             <mat-checkbox (click)="$event.stopPropagation()"
                   (change)="$event ? toggleLinha(row) : null"
@@ -115,8 +126,8 @@
       // SITUACAO
       <ng-container matColumnDef="situacaoMovimento">
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="whitespace-nowrap ">Sit.</th>
-        <td mat-cell *matCellDef="let row" class="col-situacao"
-          [class]="getSituacaoClasses(row.situacaoMovimento)">{{ row.situacaoMovimento }}
+        <td mat-cell *matCellDef="let row" class="col-situacao " >
+          <div class="w-full h-full" [class]="getSituacaoClasses(row.situacaoMovimento)">{{ row.situacaoMovimento }}</div>
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
@@ -154,18 +165,18 @@
       // DATA DE VENCIMENTO
       <ng-container matColumnDef="dataVencimento">
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="whitespace-nowrap">Dt. Venc.</th>
-        <td mat-cell *matCellDef="let row" class="!text-right "
-          [class]="getDataVencimentoClass(row)"
-        >{{ row.dataVencimento | date: 'dd/LL/yyy' }}</td>
+        <td mat-cell *matCellDef="let row" class="!text-right ">
+          <div class="w-full h-full" [class]="getDataVencimentoClass(row)">{{ row.dataVencimento | date: 'dd/LL/yyy' }}</div>
+        </td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
 
       // DATA DA BAIXA / LIQUDAÇÃO
       <ng-container matColumnDef="dataBaixa">
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="whitespace-nowrap">Dt. Liq.</th>
-        <td mat-cell *matCellDef="let row" class="!text-right "
-          [class]="getDataBaixaClass(row)"
-        >{{ row.dataBaixa | date: 'dd/LL/yyy' }}</td>
+        <td mat-cell *matCellDef="let row" class="!text-right ">
+          <div class="w-full h-full" [class]="getDataBaixaClass(row)">{{ (row.dataBaixa | date: 'dd/LL/yyy') ?? "&nbsp;" }}</div>
+        </td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
 
@@ -179,9 +190,9 @@
       // VALOR
       <ng-container matColumnDef="valor">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Valor</th>
-        <td mat-cell *matCellDef="let row" class="!text-right whitespace-nowrap !font-medium "
-          [class]="row.valor | valorDC:'DC'"
-        >{{ row.valor | valorDC }}</td>
+        <td mat-cell *matCellDef="let row" class="!text-right whitespace-nowrap !font-medium ">
+          <div class="w-full h-full" [class]="row.valor | valorDC:'DC'">{{ row.valor | valorDC }}</div>
+        </td>
         <td mat-footer-cell *matFooterCellDef class="!text-right font-bold bg-surface-variant whitespace-nowrap"
           [class]="footerValor() | valorDC:'DC'"
         >
@@ -216,7 +227,7 @@
       // ACOES
       <ng-container matColumnDef="acoes" stickyEnd>
         <th mat-header-cell *matHeaderCellDef class="col-acoes "></th>
-        <td mat-cell *matCellDef="let row" class="col-acoes !bg-slate-50 group-hover:!bg-slate-100 !z-10 transition-colors">
+        <td mat-cell *matCellDef="let row" class="col-acoes group-hover:!bg-slate-100 !z-10">
           <button mat-icon-button (click)="editar.emit(row)" [disabled]="loading()">
             <mat-icon>edit</mat-icon>
           </button>
