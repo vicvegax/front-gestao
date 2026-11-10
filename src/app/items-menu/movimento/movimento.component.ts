@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, output, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, output, signal, ViewChild } from '@angular/core';
 import { MovimentoDataSource } from './movimento-datasource';
 import { Movimento as DataDto } from '@app/_dto';
 import { BaseComponent, TooltipTruncadoDirective, ValorPipe } from '@app/_helpers';
@@ -25,20 +25,23 @@ import Decimal from 'decimal.js';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatAccordion, MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
   selector: 'app-movimento',
   templateUrl: './movimento.component.html',
+  styleUrl: './movimento.component.scss',
   imports: [
     MatCardModule, LoadingBarComponent, MatFormFieldModule, MatIcon, MatTableModule, MatSortModule,
     MatPaginatorModule, MatButtonModule, DatePipe, MatSelectModule, MatLabel, MatInputModule,
     ValorPipe, MatDatepickerModule, MatCheckboxModule, MatTooltipModule, TooltipTruncadoDirective,
-    MatAccordion, MatExpansionModule
   ]
 })
 export class ListagemMovimento extends BaseComponent<DataDto> {
+  @ViewChild('divFiltro') divFiltro!: ElementRef<HTMLDivElement>;
+
   route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
+  filtroHeight = signal(0);
 
   contaService = inject(ContaService);
   contas = toSignal(this.contaService.getAtivos(), { initialValue: []});
@@ -96,6 +99,53 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
       return acc;
     }, new Decimal(0));
   });
+
+  modoPrivacidade = signal<boolean>(false);
+  mostrarSaldos = signal<boolean>(false); // Começa fechado, economizando espaço
+
+  ngAfterViewInit() {
+    const filtro = this.divFiltro.nativeElement;
+    const updateHeight = () => this.filtroHeight.set(filtro.getBoundingClientRect().height);
+    const heightObserver = new ResizeObserver(updateHeight);
+    let scrollContainer = filtro.parentElement;
+
+    while (scrollContainer) {
+      const overflowX = getComputedStyle(scrollContainer).overflowX;
+      if (overflowX === 'auto' || overflowX === 'scroll') {
+        break;
+      }
+      scrollContainer = scrollContainer.parentElement;
+    }
+
+    const updateHorizontalScroll = () => {
+      const tabela = filtro.parentElement?.querySelector('table');
+      if (scrollContainer && tabela && tabela.getBoundingClientRect().width <= scrollContainer.clientWidth) {
+        scrollContainer.scrollLeft = 0;
+      }
+
+      filtro.style.transform = `translateX(${scrollContainer?.scrollLeft ?? 0}px)`;
+    };
+    let resizeFrame = 0;
+    const scheduleHorizontalScrollUpdate = () => {
+      cancelAnimationFrame(resizeFrame);
+      resizeFrame = requestAnimationFrame(updateHorizontalScroll);
+    };
+
+    updateHeight();
+    heightObserver.observe(filtro);
+    scrollContainer?.addEventListener('scroll', updateHorizontalScroll, { passive: true });
+    updateHorizontalScroll();
+    const sizeObserver = new ResizeObserver(scheduleHorizontalScrollUpdate);
+    if (scrollContainer) sizeObserver.observe(scrollContainer);
+    const tabela = filtro.parentElement?.querySelector('table');
+    if (tabela) sizeObserver.observe(tabela);
+    window.addEventListener('resize', scheduleHorizontalScrollUpdate);
+    this.destroyRef.onDestroy(() => heightObserver.disconnect());
+    this.destroyRef.onDestroy(() => sizeObserver.disconnect());
+    this.destroyRef.onDestroy(() => cancelAnimationFrame(resizeFrame));
+    this.destroyRef.onDestroy(() => scrollContainer?.removeEventListener('scroll', updateHorizontalScroll));
+    this.destroyRef.onDestroy(() => window.removeEventListener('resize', scheduleHorizontalScrollUpdate));
+  }
 
   toggleLinha(row: any) {
     this.selecionados.toggle(row);
