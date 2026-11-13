@@ -21,10 +21,10 @@ export class MovimentoDataSource extends BaseDataSource<DadosDto> {
   private dataFinal!: string;
   loading = signal<boolean>(false);
 
-  saldoAnterior = signal<Decimal | undefined>(undefined);
-  saldoCredito = signal<Decimal | undefined>(undefined);
-  saldoDebito = signal<Decimal | undefined>(undefined);
-  saldoEmConta = signal<Decimal | undefined>(undefined);
+  saldoAnterior = signal<Decimal>(Decimal(0));
+  saldoCredito = signal<Decimal>(Decimal(0));
+  saldoDebito = signal<Decimal>(Decimal(0));
+  saldoEmConta = signal<Decimal>(Decimal(0));
 
   constructor() {
     super();

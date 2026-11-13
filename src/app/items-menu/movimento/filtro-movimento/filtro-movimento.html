@@ -1,0 +1,99 @@
+<div class="shrink-0 z-20 pt-4 transition-all duration-300">
+  <!-- FILTROS -->
+  <div class="mb-4 flex flex-wrap lg:flex-nowrap gap-4 items-center">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full lg:w-2/6">
+      <mat-label>Conta</mat-label>
+      <mat-select [value]="idConta()?.toString()" (selectionChange)="aplicarFiltro($event.value, dataInicial(), dataFinal())">
+        @for(item of listaContas(); track item.id) {
+          <mat-option [value]="item.id.toString()">{{ item.codigo }} - {{ item.nome }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full lg:w-1/6">
+      <mat-label>Data Inicial</mat-label>
+      <input matInput [matDatepicker]="pickerInicio" [value]="dataInicial()" [max]="dataFinal()" (dateChange)="aplicarFiltro(idConta(), $event.value, dataFinal())">
+      <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+      <mat-datepicker #pickerInicio></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full lg:w-1/6">
+      <mat-label>Data Final</mat-label>
+      <input matInput [matDatepicker]="pickerFim" [value]="dataFinal()" [min]="dataInicial()" (dateChange)="aplicarFiltro(idConta(), dataInicial(), $event.value )">
+      <mat-datepicker-toggle matIconSuffix [for]="pickerFim"></mat-datepicker-toggle>
+      <mat-datepicker #pickerFim></mat-datepicker>
+    </mat-form-field>
+
+    <!-- Botões de Ação -->
+    <div class="flex gap-2 ml-auto">
+      <button mat-stroked-button (click)="mostrarSaldos.set(!mostrarSaldos())" class="rounded-full !border-slate-300">
+        <mat-icon>{{ mostrarSaldos() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        Saldos
+      </button>
+      <button mat-flat-button (click)="novo.emit()" [disabled]="loading()">+ Adicionar</button>
+    </div>
+  </div>
+
+  <!-- ÁREA DOS SALDOS (RETRÁTIL) -->
+  <!-- O Flexbox recalcula automaticamente o tamanho da tabela quando isso aparece -->
+  @if(mostrarSaldos()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+      
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
+        <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Saldo Anterior</span>
+        <div class="text-right">
+          @if(modoPrivacidade()) {
+            <span class="text-xl font-bold text-slate-400">••••••</span>
+          } @else {
+            <span class="text-xl font-bold tracking-tight" [class]="saldoAnterior() | valorDC: 'DC'">{{ saldoAnterior() | valorDC }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="bg-blue-50/30 p-4 rounded-xl shadow-sm border border-blue-100 flex flex-col gap-2">
+        <span class="text-xs text-blue-600 font-medium uppercase tracking-wider">Crédito</span>
+        <div class="text-right">
+          @if(modoPrivacidade()) {
+            <span class="text-xl font-bold text-slate-400">••••••</span>
+          } @else {
+            <span class="text-xl font-bold tracking-tight text-blue-600">{{ saldoCredito() | valorDC }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="bg-red-50/30 p-4 rounded-xl shadow-sm border border-red-100 flex flex-col gap-2">
+        <span class="text-xs text-red-600 font-medium uppercase tracking-wider">Débito</span>
+        <div class="text-right">
+          @if(modoPrivacidade()) {
+            <span class="text-xl font-bold text-slate-400">••••••</span>
+          } @else {
+            <span class="text-xl font-bold tracking-tight text-red-600">{{ saldoDebito() | valorDC }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
+        <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Saldo Atual</span>
+        <div class="text-right">
+          @if(modoPrivacidade()) {
+            <span class="text-xl font-bold text-slate-400">••••••</span>
+          } @else {
+            <span class="text-xl font-bold tracking-tight" [class]="saldoAtual() | valorDC: 'DC'">{{ saldoAtual() | valorDC }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
+        <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Saldo Projetado</span>
+        <div class="text-right">
+          @if(modoPrivacidade()) {
+            <span class="text-xl font-bold text-slate-400">••••••</span>
+          } @else {
+            <span class="text-xl font-bold tracking-tight" [class]="saldoProjetado() | valorDC: 'DC'">{{ saldoProjetado() | valorDC }}</span>
+          }
+        </div>
+      </div>
+
+    </div>
+  }
+</div>

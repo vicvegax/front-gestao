@@ -4,9 +4,7 @@ import { Movimento as DataDto } from '@app/_dto';
 import { BaseComponent, TooltipTruncadoDirective, ValorPipe } from '@app/_helpers';
 import { lastValueFrom } from 'rxjs';
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
-import { MatCardModule } from '@angular/material/card';
 import { LoadingBarComponent } from '@app/_helpers/loading-bar.component';
-import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
@@ -16,25 +14,24 @@ import { MatButtonModule } from '@angular/material/button';
 import { DatePipe } from '@angular/common';
 import { Agendado, EmConta, Liquidado } from '@app/_helpers/situacao.constant';
 import { DateTime } from 'luxon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatInputModule } from '@angular/material/input';
-import { MatDatepickerModule } from '@angular/material/datepicker';
 import { ContaService } from '@app/_services';
 import { toSignal } from '@angular/core/rxjs-interop';
 import Decimal from 'decimal.js';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { FiltroMovimento, FiltroMovimentoParams } from './filtro-movimento/filtro-movimento';
 
 @Component({
   selector: 'app-movimento',
   templateUrl: './movimento.component.html',
   styleUrl: './movimento.component.scss',
   imports: [
-    MatCardModule, LoadingBarComponent, MatFormFieldModule, MatIcon, MatTableModule, MatSortModule,
-    MatPaginatorModule, MatButtonModule, DatePipe, MatSelectModule, MatLabel, MatInputModule,
-    ValorPipe, MatDatepickerModule, MatCheckboxModule, MatTooltipModule, TooltipTruncadoDirective,
-  ]
+    LoadingBarComponent, MatIcon, MatTableModule, MatSortModule,
+    MatPaginatorModule, MatButtonModule, DatePipe, 
+    ValorPipe, MatCheckboxModule, MatTooltipModule, TooltipTruncadoDirective,
+    FiltroMovimento
+]
 })
 export class ListagemMovimento extends BaseComponent<DataDto> {
   contaUrl = input<string | undefined>(undefined, { alias: 'conta'});
@@ -47,7 +44,7 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
       return lista.find((item) => item.codigo == codigoConta)?.id;
     }
       
-    return lista.length > 0 ?  lista[0].id : undefined
+    return lista.length > 0 ? lista[0].id : undefined
   })
 
   dataInicial = input<DateTime, string | undefined>(DateTime.now(), {
@@ -68,8 +65,6 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
   route = inject(ActivatedRoute);
   router = inject(Router);
 
-  filtroHeight = signal(0);
-
   contaService = inject(ContaService);
   listaContas = toSignal(this.contaService.getAtivos(), { initialValue: []});
 
@@ -79,56 +74,24 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
   selecionados = new SelectionModel<any>(true, []);
   selecionadosSignal = signal<any[]>([]);
 
-  saldoAnterior = this.dataSource.saldoAnterior; // Signal de Decimal
-  saldoCredito = this.dataSource.saldoCredito;
-  saldoDebito = this.dataSource.saldoDebito;
-  saldoEmConta = this.dataSource.saldoEmConta;
 
-  // 2. Cálculo do Saldo Atual (Computado e Reativo)
-  saldoAtual = computed(() => {
-    const anterior = this.saldoAnterior();
-    const credito = this.saldoCredito();
-    const debito = this.saldoDebito();
-
-    if(!anterior || !credito || !debito) return new Decimal(0);
-    
-    return anterior.plus(credito).plus(debito);
-  });
-
-  somaValorTotal = computed(() => this.dataSource.dataSignal().reduce((acc, row) => acc.plus(row.valor), new Decimal(0)));
-  somaValorSelecionado = computed(() => this.selecionadosSignal().reduce((acc, row) => acc.plus(row.valor), new Decimal(0)));
+  somaValorTotal = computed(() => this.dataSource.dataSignal().reduce((acc, row) => acc.plus(row.valor), Decimal(0)));
+  somaValorSelecionado = computed(() => this.selecionadosSignal().reduce((acc, row) => acc.plus(row.valor), Decimal(0)));
   
   // 3. O Total Exibido
   footerValor = computed(() => {
     return this.selecionadosSignal().length > 0 ? this.somaValorSelecionado() : this.somaValorTotal();
   });
 
-  // labelTotal = computed(() => {
-  //   return this.selecionados.hasValue() ? 'Total Selecionado' : 'Total Geral';
-  // });
-
-  saldoProjetado = computed(() => {
-    const saldoAtual = this.saldoAtual();
-    const emConta = this.saldoEmConta();
-    if(!saldoAtual || !emConta) return new Decimal(0);
-    const emContaSelecionado = this.somaEmContaSelecionado();
-
-    return saldoAtual.plus(this.selecionadosSignal().length > 0 ? emContaSelecionado : emConta);
-  })
-
   somaEmContaSelecionado = computed(() => {
-    return this.selecionadosSignal().reduce((acc, row) => {
-      // Soma apenas se a situação for 'C'
-      if (row.situacaoMovimento === EmConta) {
-        const valor = row.valor ? new Decimal(row.valor) : new Decimal(0);
-        return acc.plus(valor);
-      }
-      return acc;
-    }, new Decimal(0));
+    return this.selecionadosSignal().length > 0 ?
+      this.selecionadosSignal().reduce((acc, row) => {
+        if (row.situacaoMovimento === EmConta) return acc.plus(row.valor);
+        return acc;
+      }, Decimal(0)) : undefined;
   });
 
   modoPrivacidade = signal<boolean>(false);
-  mostrarSaldos = signal<boolean>(false); // Começa fechado, economizando espaço
 
   toggleLinha(row: any) {
     this.selecionados.toggle(row);
@@ -145,8 +108,8 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
   //Inverte a seleção de todas as linhas
   masterToggle() {
     this.isAllSelected() ?
-        this.selecionados.clear() :
-        this.selecionados.select(...this.dataSource.dataSignal());
+      this.selecionados.clear() :
+      this.selecionados.select(...this.dataSource.dataSignal());
 
     this.selecionadosSignal.set([...this.selecionados.selected]);
   }
@@ -172,27 +135,20 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
     super();
 
     effect(() => {
-      // if(lista.length > 0 && this.idConta() === undefined) {
-      //   this.idConta.set(lista[0].id);
-      // }
-
       let conta = this.idConta();
       if(!conta) return;
 
       const dataInicial = this.dataInicial();
       const dataFinal = this.dataFinal();
 
-      // console.log(conta, dataInicial.toISODate(), dataFinal.toISODate());
       if(conta  && dataInicial.isValid && dataFinal.isValid && dataFinal >= dataInicial) {
         this.selecionados.clear();
         this.selecionadosSignal.set([]);
 
         this.dataSource.setCriteria(conta, dataInicial.toISODate()!, dataFinal.toISODate()!);
         this.dataSource.loadData();
-        // this.loading.set(false);
       }
     })
-
   }
 
   aplicarFiltro(nConta: number | undefined, nDataInicial: DateTime, nDataFinal: DateTime) {
@@ -248,10 +204,7 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
   }
 
   getDataVencimentoClass(row: DataDto ) {
-    if(row.ultimaParcela) {
-      return 'cell-ultima-parcela'
-    }
-
+    if(row.ultimaParcela) return 'cell-ultima-parcela'
     return '';
   }
 
@@ -259,7 +212,6 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
     if(row.situacaoMovimento != Liquidado && row.dataVencimento.startOf('day') < DateTime.now().startOf('day') ) {
       return 'cell-data-vencido'
     }
-
     return '';
   }
 
@@ -267,5 +219,9 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
     if(this.selecionados.isSelected(row)) return 'row-selecionado';
     if(row.dataEntregou && row.situacaoMovimento !== Liquidado) return 'row-entregue';
     return '';
+  }
+
+  handleFiltro(dados: FiltroMovimentoParams) {
+    this.aplicarFiltro(dados.conta, dados.dataInicio ?? DateTime.now().startOf('day'), dados.dataFim ?? DateTime.now().startOf('day'));
   }
 }
