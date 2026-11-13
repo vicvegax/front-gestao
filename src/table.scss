@@ -8,17 +8,23 @@
   background: rgba($color: #F0F0F0, $alpha: .5);
 }
 
+.mat-mdc-row:hover .mat-mdc-cell.sticky-row-cell {
+  background-color: color-mix(in srgb, var(--row-background-color, white) 50%, #f0f0f0 50%);
+}
+
 
 
 /* Linha com fundo vermelho bem suave */
 .row-entregue {
-  background-color: var(--color-fuchsia-100) !important;
+  --row-background-color: var(--color-fuchsia-100);
+  background-color: var(--row-background-color) !important;
   color: var(--color-fuchsia-900) !important;
 }
 
 // !bg-blue-100 !dark:bg-blue-900/20
 .row-selecionado {
-  background-color: var(--color-blue-100) !important;
+  --row-background-color: var(--color-blue-100);
+  background-color: var(--row-background-color) !important;
   color: var(--color-blue-900) !important;
 }
 
@@ -39,16 +45,19 @@
 .cell-situacao-agendado {
   background-color: var(--color-orange-200) !important;
   color: var(--color-orange-900) !important;
+  border: 1px solid var(--color-orange-300) !important;
 }
 
 .cell-situacao-liquidado {
   background-color: var(--color-yellow-100) !important;
   color: var(--color-yellow-800) !important;
+  border: 1px solid var(--color-yellow-300) !important;
 }
 
 .cell-situacao-em-conta {
   background-color: var(--color-cyan-200) !important;
   color: var(--color-cyan-800) !important;
+  border: 1px solid var(--color-cyan-300) !important;
 }
 
 .cell-valor-credito {
@@ -89,4 +98,3 @@
   text-align: center !important;
   justify-content: center !important;
 }
-

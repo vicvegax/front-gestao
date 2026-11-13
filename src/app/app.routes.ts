@@ -24,6 +24,10 @@ export const routes: Routes = [
         loadComponent: () => import('./items-menu/movimento/movimento.component').then(m => m.ListagemMovimento)
       },
       {
+        path: 'movimento/:conta',
+        loadComponent: () => import('./items-menu/movimento/movimento.component').then(m => m.ListagemMovimento)
+      },
+      {
         path: 'tipo-evento',
         loadComponent: () => import('./items-menu/tipo-evento/tipo-evento.component').then(m => m.ListagemTipoEvento)
       },

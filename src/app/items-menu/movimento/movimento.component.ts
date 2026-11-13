@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, effect, ElementRef, inject, output, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, input, output, signal, ViewChild } from '@angular/core';
 import { MovimentoDataSource } from './movimento-datasource';
 import { Movimento as DataDto } from '@app/_dto';
 import { BaseComponent, TooltipTruncadoDirective, ValorPipe } from '@app/_helpers';
@@ -11,7 +11,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { DatePipe } from '@angular/common';
 import { Agendado, EmConta, Liquidado } from '@app/_helpers/situacao.constant';
@@ -37,11 +37,41 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   ]
 })
 export class ListagemMovimento extends BaseComponent<DataDto> {
+  contaUrl = input<string | undefined>(undefined, { alias: 'conta'});
+
+  idConta = computed(() => {
+    const lista = this.listaContas();
+    const codigoConta = this.contaUrl();
+
+    if(codigoConta) {
+      return lista.find((item) => item.codigo == codigoConta)?.id;
+    }
+      
+    return lista.length > 0 ?  lista[0].id : undefined
+  })
+
+  dataInicial = input<DateTime, string | undefined>(DateTime.now(), {
+    alias: 'de',
+    transform: (val: string | undefined) => {
+      const dt = val ? DateTime.fromISO(val) : DateTime.now().startOf('day');
+      return dt.isValid ? dt : DateTime.now().startOf('day')
+    }
+  });
+  dataFinal = input<DateTime, string | undefined>(DateTime.now(), {
+    alias: 'ate',
+    transform: (val: string | undefined) => {
+      const dt = val ? DateTime.fromISO(val) : DateTime.now().startOf('day');
+      return dt.isValid ? dt : DateTime.now().startOf('day')
+    }
+  });
+
   route = inject(ActivatedRoute);
+  router = inject(Router);
+
   filtroHeight = signal(0);
 
   contaService = inject(ContaService);
-  contas = toSignal(this.contaService.getAtivos(), { initialValue: []});
+  listaContas = toSignal(this.contaService.getAtivos(), { initialValue: []});
 
   dataSource = new MovimentoDataSource();
   override loading = this.dataSource.loading;
@@ -125,13 +155,9 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
   novo = output<void>();
   editar = output<DataDto>();
 
-  idConta = signal<number | undefined>(undefined);
-  dataInicial = signal<DateTime>(DateTime.now());
-  dataFinal = signal<DateTime>(DateTime.now());
-
-
   get displayedColumns() {
-    return ['index', 'situacaoMovimento', 'unidade', 'pessoal', 'evento', 'dataVencimento', 'dataBaixa', 'competencia', 'valor', 'tipoDocumento', 'dataEntregou', 'id', 'acoes'];
+    return ['index', 'situacaoMovimento', 'unidade', 'pessoal', 'evento', 'dataVencimento', 'dataBaixa', 'competencia', 'valor', 'tipoDocumento', 'dataEntregou', 'acoes'];
+    // return ['index', 'situacaoMovimento', 'unidade', 'pessoal', 'evento', 'dataVencimento', 'competencia', 'valor', 'tipoDocumento', 'dataEntregou', 'acoes'];
   }
   
   handleSortEvent(e: Sort) {
@@ -146,24 +172,40 @@ export class ListagemMovimento extends BaseComponent<DataDto> {
     super();
 
     effect(() => {
-      const lista = this.contas();
+      // if(lista.length > 0 && this.idConta() === undefined) {
+      //   this.idConta.set(lista[0].id);
+      // }
 
-      if(lista.length > 0 && this.idConta() === undefined) {
-        this.idConta.set(lista[0].id);
-      }
-    })
+      let conta = this.idConta();
+      if(!conta) return;
 
-    effect(() => {
-      const conta = this.idConta();
       const dataInicial = this.dataInicial();
       const dataFinal = this.dataFinal();
-      if(conta !== undefined && dataInicial.isValid && dataFinal.isValid && dataFinal >= dataInicial) {
+
+      // console.log(conta, dataInicial.toISODate(), dataFinal.toISODate());
+      if(conta  && dataInicial.isValid && dataFinal.isValid && dataFinal >= dataInicial) {
+        this.selecionados.clear();
+        this.selecionadosSignal.set([]);
+
         this.dataSource.setCriteria(conta, dataInicial.toISODate()!, dataFinal.toISODate()!);
         this.dataSource.loadData();
         // this.loading.set(false);
       }
     })
 
+  }
+
+  aplicarFiltro(nConta: number | undefined, nDataInicial: DateTime, nDataFinal: DateTime) {
+    const codigoConta = nConta ? this.listaContas().find((item) => item.id ==  nConta)?.codigo : undefined;
+    const path = codigoConta ? ['/movimento', codigoConta] : ['/movimento'];
+    this.router.navigate(path, {
+      queryParams: {
+        de: nDataInicial.toISODate(),
+        ate: nDataFinal.toISODate()
+      },
+      replaceUrl: true
+      }
+    );
   }
 
   async onSalvar(row: DataDto) {

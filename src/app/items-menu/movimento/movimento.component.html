@@ -13,23 +13,23 @@
     <div class="mb-4 flex flex-wrap lg:flex-nowrap gap-4 items-center">
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full lg:w-2/6">
         <mat-label>Conta</mat-label>
-        <mat-select [value]="idConta()" (selectionChange)="idConta.set($event.value)">
-          @for(item of contas(); track item.id) {
-            <mat-option [value]="item.id">{{ item.codigo }} - {{ item.nome }}</mat-option>
+        <mat-select [value]="idConta()?.toString()" (selectionChange)="aplicarFiltro($event.value, dataInicial(), dataFinal())">
+          @for(item of listaContas(); track item.id) {
+            <mat-option [value]="item.id.toString()">{{ item.codigo }} - {{ item.nome }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full lg:w-1/6">
         <mat-label>Data Inicial</mat-label>
-        <input matInput [matDatepicker]="pickerInicio" [value]="dataInicial()" [max]="dataFinal()" (dateChange)="dataInicial.set($event.value)">
+        <input matInput [matDatepicker]="pickerInicio" [value]="dataInicial()" [max]="dataFinal()" (dateChange)="aplicarFiltro(idConta(), $event.value, dataFinal())">
         <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
         <mat-datepicker #pickerInicio></mat-datepicker>
       </mat-form-field>
 
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full lg:w-1/6">
         <mat-label>Data Final</mat-label>
-        <input matInput [matDatepicker]="pickerFim" [value]="dataFinal()" [min]="dataInicial()" (dateChange)="dataFinal.set($event.value)">
+        <input matInput [matDatepicker]="pickerFim" [value]="dataFinal()" [min]="dataInicial()" (dateChange)="aplicarFiltro(idConta(), dataInicial(), $event.value )">
         <mat-datepicker-toggle matIconSuffix [for]="pickerFim"></mat-datepicker-toggle>
         <mat-datepicker #pickerFim></mat-datepicker>
       </mat-form-field>
@@ -60,28 +60,6 @@
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Saldo Atual</span>
-          <div class="text-right">
-            @if(modoPrivacidade()) {
-              <span class="text-xl font-bold text-slate-400">••••••</span>
-            } @else {
-              <span class="text-xl font-bold tracking-tight" [class]="saldoAtual() | valorDC: 'DC'">{{ saldoAtual() | valorDC }}</span>
-            }
-          </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
-          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Saldo Projetado</span>
-          <div class="text-right">
-            @if(modoPrivacidade()) {
-              <span class="text-xl font-bold text-slate-400">••••••</span>
-            } @else {
-              <span class="text-xl font-bold tracking-tight" [class]="saldoProjetado() | valorDC: 'DC'">{{ saldoProjetado() | valorDC }}</span>
-            }
-          </div>
-        </div>
-
         <div class="bg-blue-50/30 p-4 rounded-xl shadow-sm border border-blue-100 flex flex-col gap-2">
           <span class="text-xs text-blue-600 font-medium uppercase tracking-wider">Crédito</span>
           <div class="text-right">
@@ -104,16 +82,32 @@
           </div>
         </div>
 
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
+          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Saldo Atual</span>
+          <div class="text-right">
+            @if(modoPrivacidade()) {
+              <span class="text-xl font-bold text-slate-400">••••••</span>
+            } @else {
+              <span class="text-xl font-bold tracking-tight" [class]="saldoAtual() | valorDC: 'DC'">{{ saldoAtual() | valorDC }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
+          <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Saldo Projetado</span>
+          <div class="text-right">
+            @if(modoPrivacidade()) {
+              <span class="text-xl font-bold text-slate-400">••••••</span>
+            } @else {
+              <span class="text-xl font-bold tracking-tight" [class]="saldoProjetado() | valorDC: 'DC'">{{ saldoProjetado() | valorDC }}</span>
+            }
+          </div>
+        </div>
+
       </div>
     }
   </div>
 
-  <!-- ========================================== -->
-  <!-- ÁREA DA TABELA (SCROLL INTERNO)            -->
-  <!-- flex-1 min-h-0: Força a tabela a ocupar só -->
-  <!-- o espaço restante. overflow-auto: Ativa a  -->
-  <!-- rolagem mantendo Header/Footer do mat-table-->
-  <!-- ========================================== -->
   <div class="flex-1 min-h-0 overflow-auto relative bg-white">
     
     <!-- LOADING BAR SUPERIOR -->
@@ -125,7 +119,7 @@
       (matSortChange)="handleSortEvent($event)"
       [matSortActive]="route.snapshot.queryParams['sort']"
       [matSortDirection]="route.snapshot.queryParams['dir'] || 'asc'"
-      class="[--mat-table-row-item-container-height:36px] w-full"
+      class="[--mat-table-row-item-container-height:30px] w-full"
     >
       <!-- CHECKBOX / NR. ORDEM -->
       <ng-container matColumnDef="index" sticky>
@@ -139,7 +133,7 @@
             <span class="text-right font-medium">Ord.</span>
           </div>
         </th>
-        <td mat-cell *matCellDef="let row" class="!text-right !z-10 group-hover:!bg-slate-100">
+        <td mat-cell *matCellDef="let row" class="!text-right !z-10 sticky-row-cell">
           <div class="flex items-center gap-3 justify-between">
             <mat-checkbox (click)="$event.stopPropagation()"
                   (change)="$event ? toggleLinha(row) : null"
@@ -155,7 +149,8 @@
       <ng-container matColumnDef="situacaoMovimento">
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="whitespace-nowrap">Sit.</th>
         <td mat-cell *matCellDef="let row" class="col-situacao">
-          <div class="w-full h-full" [class]="getSituacaoClasses(row.situacaoMovimento)">{{ row.situacaoMovimento }}</div>
+          <!-- <div class="w-full h-full" [class]="getSituacaoClasses(row.situacaoMovimento)">{{ row.situacaoMovimento }}</div> -->
+          <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-medium border" [class]="getSituacaoClasses(row.situacaoMovimento)">{{ row.situacaoMovimento }}</span>
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
@@ -187,7 +182,7 @@
       <ng-container matColumnDef="dataVencimento">
         <th mat-header-cell *matHeaderCellDef mat-sort-header class="whitespace-nowrap">Dt. Venc.</th>
         <td mat-cell *matCellDef="let row" class="!text-right">
-          <div class="w-full h-full" [class]="getDataVencimentoClass(row)">{{ row.dataVencimento | date: 'dd/LL/yyy' }}</div>
+          <div class="w-full h-full" [class]="getDataVencimentoClass(row)">{{ (row.dataVencimento | date: 'dd/LL/yyy') }}</div>
         </td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
@@ -225,21 +220,24 @@
       </ng-container>
 
       <ng-container matColumnDef="dataEntregou">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header class="whitespace-nowrap">Dt. Entreg..</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header class="whitespace-nowrap">Dt. Entreg.</th>
         <td mat-cell *matCellDef="let row" class="!text-right">{{ row.dataEntregou | date: 'dd/LL/yyy' }}</td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
 
+<!-- 
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Id.</th>
         <td mat-cell *matCellDef="let row" class="!text-right">{{ row.id }}</td>
         <td mat-footer-cell *matFooterCellDef></td>
       </ng-container>
-
+ -->
+      
       <ng-container matColumnDef="acoes" stickyEnd>
-        <th mat-header-cell *matHeaderCellDef class="col-acoes">Editar</th>
-        <td mat-cell *matCellDef="let row" class="col-acoes group-hover:!bg-slate-100 !z-10">
-          <button mat-icon-button (click)="editar.emit(row)" [disabled]="loading()">
+        <th mat-header-cell *matHeaderCellDef class="col-acoes"></th>
+        <td mat-cell *matCellDef="let row" class="col-acoes !z-10 sticky-row-cell">
+          <button mat-icon-button (click)="editar.emit(row)" [disabled]="loading()" aria-label="Mais opções" class="opacity-100 md:opacity-0 md:group-hover:opacity-100">
+            <!-- <mat-icon>more_vert</mat-icon> -->
             <mat-icon>edit</mat-icon>
           </button>
         </td>
@@ -248,13 +246,13 @@
 
       <!-- ROWS COM STICKY NATIVO DO MATERIAL -->
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"
-        class="!bg-slate-200 !text-slate-700 !border-b-2 !border-slate-300 !font-medium !h-[36px]"
+        class="!bg-slate-200 !text-slate-700 !border-b-2 !border-slate-300 !font-medium !h-[30px]"
       ></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"
         [class]="getRowClass(row) + ' group'"
       ></tr>
       <tr mat-footer-row *matFooterRowDef="displayedColumns; sticky: true"
-        class="!text-right !font-bold !bg-slate-200 !text-slate-900 !border-t-2 !border-slate-300 !h-[36px]"
+        class="!text-right !font-bold !bg-slate-200 !text-slate-900 !border-t-2 !border-slate-300 !h-[30px]"
       ></tr>
     </table>
   </div>

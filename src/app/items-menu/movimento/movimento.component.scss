@@ -7,3 +7,16 @@
   overflow: hidden; /* Mata qualquer scroll duplo da página */
   background-color: var(--mat-sys-surface, #ffffff);
 }
+
+.mat-mdc-header-cell,
+.mat-mdc-cell,
+.mat-mdc-footer-cell {
+  padding: 2px 8px;
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.mat-mdc-header-cell:last-child,
+.mat-mdc-cell:last-child,
+.mat-mdc-footer-cell:last-child {
+  border-right: 0;
+}
